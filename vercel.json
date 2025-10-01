@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://novapos.byethost12.com/pos/public/api/:path*"
+    },
+    {
+      "source": "/sanctum/:path*",
+      "destination": "https://novapos.byethost12.com/pos/public/sanctum/:path*"
+    }
+  ]
+}

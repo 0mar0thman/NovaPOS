@@ -37,7 +37,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://novapos.byethost12.com/pos/public",
+  baseURL: "/api", // أو "/" إذا كنت تستخدم Vercel proxy
   withCredentials: true,
   headers: {
     "Accept": "application/json",
