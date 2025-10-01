@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 // تحديد الـ baseURL بناءً على البيئة (لو محلي أو production)
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://127.0.0.1:8000",
+  baseURL: "https://novapos.byethost12.com/pos/public",
   withCredentials: true,
   headers: {
     "Accept": "application/json",
