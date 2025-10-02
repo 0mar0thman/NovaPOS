@@ -1,3 +1,4 @@
+// components/AuthGuard.tsx
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAbility } from "@casl/react";
@@ -23,12 +24,12 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   const ability = useAbility(AbilityContext);
   const { currentUser } = useUser();
 
-  // إذا لم يكن هناك توكن، توجيه إلى صفحة Login
-  if (!token) {
+  // ✅ تحقق آمن من وجود التوكن
+  if (!token || token === "undefined" || token === "null") {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // عرض شاشة تحميل أثناء انتظار تحميل بيانات المستخدم
+  // ✅ تحميل بيانات المستخدم
   if (!currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
@@ -42,7 +43,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
     );
   }
 
-  // التحقق من الصلاحيات إذا تم تحديد action و subject
+  // ✅ التحقق من الصلاحيات
   if (action && subject && !ability.can(action as any, subject as any)) {
     if (fallback) {
       return <>{fallback}</>;

@@ -1,3 +1,4 @@
+// pages/Login.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/axios";
@@ -21,48 +22,85 @@ const Login = ({ setAbility }: LoginProps) => {
   const navigate = useNavigate();
   const { setCurrentUser } = useUser();
 
+  // ✅ دالة لتنظيف localStorage
+  const clearAuthData = () => {
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("permissions");
+    localStorage.removeItem("user_data");
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    
+    // ✅ تنظيف أي بيانات قديمة
+    clearAuthData();
 
     try {
-      await api.get("sanctum/csrf-cookie", { withCredentials: true });
+      // ✅ الحصول على CSRF token أولاً
+      await api.get("sanctum/csrf-cookie", { 
+        withCredentials: true,
+        timeout: 10000 // 10 ثواني
+      });
 
       const res = await api.post(
         "/api/login",
         { email, password },
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          timeout: 15000
+        }
       );
+
+      // ✅ التحقق من صحة الاستجابة
+      if (!res.data || !res.data.token) {
+        throw new Error("Invalid response from server");
+      }
+
       const { token, permissions, user } = res.data;
 
-      // حفظ التوكن والصلاحيات
-      localStorage.setItem("auth_token", token);
-      localStorage.setItem("permissions", JSON.stringify(permissions));
+      // ✅ التحقق من البيانات قبل الحفظ
+      if (!token || !user) {
+        throw new Error("Missing authentication data");
+      }
 
-      // حفظ بيانات المستخدم في السياق
+      // ✅ حفظ البيانات بشكل آمن
+      localStorage.setItem("auth_token", token);
+      if (permissions) {
+        localStorage.setItem("permissions", JSON.stringify(permissions));
+      }
+
+      // ✅ حفظ بيانات المستخدم
       setCurrentUser({
         id: user.id,
-        name: user.name,
+        name: user.name || "User",
         email: user.email,
-        roles: user.role,
+        roles: user.role || "user",
       });
 
-      // تحويل صلاحيات الباك إلى قواعد CASL
-      const rules = mapBackendPermissions(permissions);
-
-      // تحديث الـ Ability
+      // ✅ تحويل الصلاحيات
+      const rules = mapBackendPermissions(permissions || []);
       setAbility(createAppAbility(rules));
 
       toast({
         title: "تم تسجيل الدخول بنجاح ✅",
-        description: `مرحباً ${user.name}`,
+        description: `مرحباً ${user.name || user.email}`,
         className: "transition-all duration-300",
       });
-      navigate("/");
+      
+      navigate("/", { replace: true });
+      
     } catch (error: any) {
+      // ✅ تنظيف البيانات في حالة الخطأ
+      clearAuthData();
+      
+      const errorMessage = error.response?.data?.message 
+        || error.message 
+        || "حدث خطأ أثناء تسجيل الدخول";
+        
       toast({
         title: "فشل تسجيل الدخول",
-        description: error?.response?.data?.message || "بيانات غير صحيحة",
+        description: errorMessage,
         variant: "destructive",
         className: "transition-all duration-300",
       });
@@ -72,10 +110,7 @@ const Login = ({ setAbility }: LoginProps) => {
   };
 
   return (
-    <div
-      className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-100 to-blue-200 dark:from-slate-900 dark:to-slate-800 transition-all duration-300"
-      dir="rtl"
-    >
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-100 to-blue-200 dark:from-slate-900 dark:to-slate-800 transition-all duration-300" dir="rtl">
       <Card className="w-full max-w-md bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border-blue-100 dark:border-slate-700 shadow-xl rounded-xl transition-all duration-300">
         <CardHeader>
           <CardTitle className="text-center text-blue-800 dark:text-blue-300 transition-all duration-300">

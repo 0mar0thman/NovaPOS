@@ -1,3 +1,4 @@
+// pages/Index.tsx
 import { useState, useEffect, useContext } from "react";
 import { Tabs } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
@@ -16,35 +17,65 @@ const Index = () => {
   const navigate = useNavigate();
   const ability = useContext(AbilityContext);
 
-  // Fetch current user and update Ability 
+  // ✅ دالة مساعدة للتحقق من التوكن
+  const getValidToken = () => {
+    const token = localStorage.getItem("auth_token");
+    if (!token || token === "undefined" || token === "null") {
+      return null;
+    }
+    return token;
+  };
+
+  // ✅ دالة لتحليل البيانات بشكل آمن
+  const safeJSONParse = (data: string | null, fallback: any = []) => {
+    try {
+      if (!data || data === "undefined" || data === "null") {
+        return fallback;
+      }
+      return JSON.parse(data);
+    } catch (error) {
+      console.error("JSON parse error:", error);
+      return fallback;
+    }
+  };
+
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const token = localStorage.getItem("auth_token");
+        const token = getValidToken();
         if (!token) {
           navigate("/login", { replace: true });
           return;
         }
+
         const response = await axios.get("/api/get-user", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-          const permissions = response.data.permissions || [];
-          console.log("User permissions:", permissions);
-                
-          // لو المستخدم عنده manage-all → يبقى Admin
-          if (permissions.includes("manage-all")) {
-            ability.update(createAppAbility([{ action: "manage", subject: "All" }]).rules);
-          } else {
-            const rules = permissions.map((permission: string) => {
-              const [action, subject] = permission.split("-");
-              return { action, subject };
-            });
-            ability.update(createAppAbility(rules).rules);
-          }
-          
+        // ✅ تحقق من وجود البيانات
+        if (!response.data) {
+          throw new Error("No user data received");
+        }
 
-        // إذا لم يكن للمستخدم صلاحية الوصول إلى تبويب "sales"، قم بتغيير التبويب الافتراضي
+        const permissions = response.data.permissions || [];
+        console.log("User permissions:", permissions);
+
+        // ✅ تحديث الصلاحيات بشكل آمن
+        if (permissions.includes("manage-all")) {
+          ability.update(createAppAbility([{ action: "manage", subject: "All" }]).rules);
+        } else {
+          const rules = permissions
+            .filter((permission: string) => permission && typeof permission === "string")
+            .map((permission: string) => {
+              const [action, subject] = permission.split("-");
+              return action && subject ? { action, subject } : null;
+            })
+            .filter(Boolean);
+          
+          ability.update(createAppAbility(rules).rules);
+        }
+
+        // ✅ تغيير التبويب الافتراضي إذا لزم الأمر
         if (!ability.can("read", "Dashboard")) {
           if (ability.can("read", "Reports")) {
             setActiveTab("reports");
@@ -53,26 +84,36 @@ const Index = () => {
           }
         }
       } catch (error: any) {
-        console.error("Failed to fetch user permissions:", error.response?.data);
+        console.error("Failed to fetch user permissions:", error);
+        
+        // ✅ تنظيف البيانات التالفة
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("permissions");
+        
         if (error.response?.status === 401) {
-          localStorage.removeItem("auth_token");
+          navigate("/login", { replace: true });
+        } else {
+          toast({
+            title: "خطأ",
+            description: "فشل في تحميل بيانات المستخدم. يرجى تسجيل الدخول مرة أخرى.",
+            variant: "destructive",
+            className: "transition-all duration-300",
+          });
           navigate("/login", { replace: true });
         }
-        toast({
-          title: "خطأ",
-          description: error.response?.data?.message || "فشل في جلب بيانات المستخدم",
-          variant: "destructive",
-          className: "transition-all duration-300",
-        });
       } finally {
         setIsLoadingPermissions(false);
       }
     };
+
     fetchCurrentUser();
   }, [navigate, ability, toast]);
 
   const handleLogout = () => {
+    // ✅ تنظيف كامل للبيانات
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("permissions");
+    localStorage.removeItem("user_data");
     navigate("/login", { replace: true });
   };
 
@@ -80,24 +121,18 @@ const Index = () => {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-slate-900 transition-all duration-300">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500 dark:text-blue-400" />
+        <span className="mr-2 text-gray-600 dark:text-gray-400">جاري التحميل...</span>
       </div>
     );
   }
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-all duration-300"
-      dir="rtl"
-    >
-     <Header
-      onLogout={handleLogout}
-      activeTab="sales"
-      setActiveTab={setActiveTab}
-    />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-all duration-300" dir="rtl">
+      <Header onLogout={handleLogout} activeTab="sales" setActiveTab={setActiveTab} />
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} ability={ability} />
-          <ContentTabs activeTab={activeTab}  />
+          <ContentTabs activeTab={activeTab} />
         </Tabs>
       </div>
     </div>
