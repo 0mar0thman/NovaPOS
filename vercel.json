@@ -2,11 +2,42 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://novapos.byethost12.com/pos/public/api/:path*"
+      "destination": "https://pos-nova.infinityfree.me/api/:path*"
     },
     {
       "source": "/sanctum/:path*",
-      "destination": "https://novapos.byethost12.com/pos/public/sanctum/:path*"
+      "destination": "https://pos-nova.infinityfree.me/sanctum/:path*"
+    },
+    {
+      "source": "/login",
+      "destination": "https://pos-nova.infinityfree.me/login"
+    },
+    {
+      "source": "/logout",
+      "destination": "https://pos-nova.infinityfree.me/logout"
+    },
+    {
+      "source": "/register",
+      "destination": "https://pos-nova.infinityfree.me/register"
+    },
+    {
+      "source": "/user",
+      "destination": "https://pos-nova.infinityfree.me/user"
+    },
+    {
+      "source": "/get-user",
+      "destination": "https://pos-nova.infinityfree.me/get-user"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "https://pos-nova.vercel.app" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-Requested-With, Content-Type, Authorization, X-XSRF-TOKEN" },
+        { "key": "Access-Control-Allow-Credentials", "value": "true" }
+      ]
     }
   ]
 }

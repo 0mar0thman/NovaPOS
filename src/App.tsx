@@ -78,6 +78,7 @@ import MainLayout from "@/layouts/MainLayout";
 import AuthGuard from "@/pages/AuthGuard";
 import { mapBackendPermissions } from "@/config/abilityMapper";
 import { UserProvider } from "@/components/dashboard/UserContext";
+import api from "@/lib/axios";
 
 const queryClient = new QueryClient();
 
@@ -102,6 +103,20 @@ const App = () => {
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
+
+  useEffect(() => {
+  // اختبار البروكسي
+  const testProxy = async () => {
+    try {
+      const response = await api.get('/sanctum/csrf-cookie');
+      console.log('✅ البروكسي يعمل بنجاح:', response.status);
+    } catch (error) {
+      console.error('❌ مشكلة في البروكسي:', error);
+    }
+  };
+  
+  testProxy();
+}, []);
 
   return (
     <AbilityContext.Provider value={ability}>

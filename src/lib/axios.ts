@@ -32,11 +32,20 @@
 // export default api;
 
 
-
 import axios from "axios";
 
+// تحديد baseURL بناءً على البيئة
+const getBaseURL = () => {
+  // في التطوير: استخدام الرابط المباشر
+  if (import.meta.env.DEV) {
+    return import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+  }
+  // في الإنتاج: استخدام المسارات النسبية للبروكسي
+  return "/";
+};
+
 const api = axios.create({
-  baseURL:  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000",
+  baseURL: getBaseURL(),
   withCredentials: true,
   headers: {
     "Accept": "application/json",
@@ -48,11 +57,11 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("auth_token");
-    if (token) {
+    if (token && token !== "undefined" && token !== "null") {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // إضافة timestamp لمنع caching
+    // إضافة timestamp لمنع caching (فقط للطلبات GET)
     if (config.method === 'get') {
       config.params = {
         ...config.params,
@@ -72,18 +81,17 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 419 || error.response?.status === 401) {
-      // محاولة تجديد CSRF token
+      // محاولة تجديد CSRF token باستخدام المسار النسبي
       try {
-        await axios.get(
-          "https://novapos.byethost12.com/pos/public/sanctum/csrf-cookie",
-          { 
-            withCredentials: true,
-            params: { _t: Date.now() }
-          }
-        );
+        await api.get("/sanctum/csrf-cookie");
       } catch (csrfError) {
         console.error("فشل في الحصول على CSRF token:", csrfError);
       }
+      
+      // تنظيف البيانات المحلية وإعادة التوجيه
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("permissions");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

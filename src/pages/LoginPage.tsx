@@ -1,4 +1,4 @@
-// pages/Login.tsx
+// pages/Login.tsx - الإصلاح الكامل
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/axios";
@@ -22,28 +22,37 @@ const Login = ({ setAbility }: LoginProps) => {
   const navigate = useNavigate();
   const { setCurrentUser } = useUser();
 
-  // ✅ دالة لتنظيف localStorage
+  // ✅ دالة تنظيف محسنة
   const clearAuthData = () => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("permissions");
-    localStorage.removeItem("user_data");
+    const keys = ["auth_token", "permissions", "user_data"];
+    keys.forEach(key => {
+      localStorage.removeItem(key);
+      // ✅ تأكد من إزالة أي قيم "undefined" نصية
+      if (localStorage.getItem(key) === "undefined") {
+        localStorage.removeItem(key);
+      }
+    });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // ✅ تنظيف أي بيانات قديمة
+    // ✅ تنظيف أي بيانات قديمة قبل البدء
     clearAuthData();
 
     try {
-      // ✅ الحصول على CSRF token أولاً
-      await api.get("sanctum/csrf-cookie", { 
+      console.log("جاري الحصول على CSRF token...");
+      
+      // ✅ الحصول على CSRF token مع معالجة الأخطاء
+      const csrfResponse = await api.get("sanctum/csrf-cookie", { 
         withCredentials: true,
-        timeout: 10000 // 10 ثواني
+        timeout: 10000
       });
+      console.log("CSRF token تم الحصول عليه:", csrfResponse.status);
 
-      const res = await api.post(
+      console.log("جاري تسجيل الدخول...");
+      const loginResponse = await api.post(
         "/api/login",
         { email, password },
         { 
@@ -52,33 +61,44 @@ const Login = ({ setAbility }: LoginProps) => {
         }
       );
 
-      // ✅ التحقق من صحة الاستجابة
-      if (!res.data || !res.data.token) {
-        throw new Error("Invalid response from server");
+      console.log("استجابة الخادم:", loginResponse.data);
+
+      // ✅ تحقق قوي من صحة الاستجابة
+      if (!loginResponse.data) {
+        throw new Error("لا توجد بيانات في استجابة الخادم");
       }
 
-      const { token, permissions, user } = res.data;
+      const { token, permissions, user } = loginResponse.data;
 
-      // ✅ التحقق من البيانات قبل الحفظ
-      if (!token || !user) {
-        throw new Error("Missing authentication data");
+      // ✅ تحقق من وجود التوكن والمستخدم
+      if (!token || token === "undefined" || token === "null") {
+        throw new Error("توكن المصادقة غير صالح");
       }
 
-      // ✅ حفظ البيانات بشكل آمن
-      localStorage.setItem("auth_token", token);
-      if (permissions) {
+      if (!user) {
+        throw new Error("بيانات المستخدم غير متوفرة");
+      }
+
+      // ✅ حفظ البيانات مع التحقق
+      if (token && token !== "undefined") {
+        localStorage.setItem("auth_token", token);
+        console.log("تم حفظ التوكن:", token.substring(0, 20) + "...");
+      }
+
+      if (permissions && Array.isArray(permissions)) {
         localStorage.setItem("permissions", JSON.stringify(permissions));
+        console.log("تم حفظ الصلاحيات:", permissions);
       }
 
-      // ✅ حفظ بيانات المستخدم
+      // ✅ حفظ بيانات المستخدم في context
       setCurrentUser({
         id: user.id,
-        name: user.name || "User",
+        name: user.name || "مستخدم",
         email: user.email,
         roles: user.role || "user",
       });
 
-      // ✅ تحويل الصلاحيات
+      // ✅ تحويل الصلاحيات وتحديث ability
       const rules = mapBackendPermissions(permissions || []);
       setAbility(createAppAbility(rules));
 
@@ -88,16 +108,29 @@ const Login = ({ setAbility }: LoginProps) => {
         className: "transition-all duration-300",
       });
       
+      // ✅ الانتقال للصفحة الرئيسية
       navigate("/", { replace: true });
       
     } catch (error: any) {
+      console.error("خطأ تسجيل الدخول:", error);
+      
       // ✅ تنظيف البيانات في حالة الخطأ
       clearAuthData();
       
-      const errorMessage = error.response?.data?.message 
-        || error.message 
-        || "حدث خطأ أثناء تسجيل الدخول";
-        
+      let errorMessage = "حدث خطأ غير متوقع";
+      
+      if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network')) {
+        errorMessage = "مشكلة في الاتصال بالخادم. تحقق من اتصال الإنترنت.";
+      } else if (error.response?.status === 401) {
+        errorMessage = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+      } else if (error.response?.status === 422) {
+        errorMessage = "بيانات الدخول غير صالحة";
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "فشل تسجيل الدخول",
         description: errorMessage,
@@ -108,6 +141,11 @@ const Login = ({ setAbility }: LoginProps) => {
       setIsLoading(false);
     }
   };
+
+  // ✅ تنظيف البيانات عند تحميل المكون
+  useState(() => {
+    clearAuthData();
+  });
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-100 to-blue-200 dark:from-slate-900 dark:to-slate-800 transition-all duration-300" dir="rtl">
