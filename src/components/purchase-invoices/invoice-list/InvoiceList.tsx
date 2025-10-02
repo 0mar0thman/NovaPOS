@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Receipt, Download, UserX, Eye, Edit, Trash2, Printer, MoreHorizontal } from "lucide-react";
+import { Receipt, Download, UserX, Eye, Edit, Trash2, Printer } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,12 +20,6 @@ import { InvoiceFormDialog } from "../dialogs/InvoiceFormDialog";
 import { safeToFixed, formatDate } from "../types/utils";
 import { Can } from "@/components/Can";
 import { PrintLayout } from "../components/PrintTemplate/PrintLayout";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface InvoiceListProps {
   invoices: PurchaseInvoice[];
@@ -240,7 +234,7 @@ export const InvoiceList = ({
 
   return (
     <Card
-      className="p-4 mt-4 mb-6 bg-white/80 dark:bg-slate-800/90 backdrop-blur-md border-blue-100 dark:border-slate-700 rounded-xl shadow-lg"
+      className="p-1 mt-1 bg-white/80 dark:bg-slate-800/90 backdrop-blur-md border-blue-100 dark:border-slate-700 rounded-xl shadow-lg"
       dir="rtl"
     >
       {invoices.length === 0 ? (
@@ -253,184 +247,44 @@ export const InvoiceList = ({
         </div>
       ) : (
         <>
-          {/* Mobile Cards View */}
-          <div className="block md:hidden space-y-4">
-            {invoices.map((invoice, index) => (
-              <Card
-                key={invoice.id}
-                className="p-4 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-sm"
-              >
-                <div className="space-y-3">
-                  {/* Header */}
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <Badge
-                        variant={
-                          invoice.amount_paid >= invoice.total_amount
-                            ? "default"
-                            : invoice.amount_paid > 0
-                            ? "secondary"
-                            : "destructive"
-                        }
-                        className="text-xs px-2 py-1"
-                      >
-                        {invoice.amount_paid >= invoice.total_amount
-                          ? "مدفوع"
-                          : invoice.amount_paid > 0
-                          ? "جزئي"
-                          : "غير مدفوع"}
-                      </Badge>
-                    </div>
-                    <div className="text-left">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">#</p>
-                      <p className="text-sm font-medium dark:text-gray-200">
-                        {invoices.length - index}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Invoice Info */}
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">رقم الفاتورة</p>
-                      <p className="font-medium dark:text-gray-200">{invoice.invoice_number}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">التاريخ</p>
-                      <p className="dark:text-gray-300">{formatDate(invoice.date)}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">اسم المورد</p>
-                      <p className="font-medium dark:text-gray-200 truncate">
-                        {invoice.supplier?.name || "غير محدد"}
-                      </p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">المستلم</p>
-                      <p className="dark:text-gray-300">
-                        {invoice.cashier_display_name || invoice.user_display_name}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Financial Info */}
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-200 dark:border-slate-700">
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">الإجمالي</p>
-                      <p className="text-sm font-semibold dark:text-gray-200">
-                        {safeToFixed(invoice.total_amount)} ج.م
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">المدفوع</p>
-                      <p className="text-sm dark:text-gray-300">
-                        {safeToFixed(invoice.amount_paid)} ج.م
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">المتبقي</p>
-                      <p className="text-sm font-semibold dark:text-gray-200">
-                        {safeToFixed(invoice.total_amount - invoice.amount_paid)} ج.م
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-slate-700">
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleView(invoice)}
-                        className="h-8 w-8 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/30"
-                        title="عرض التفاصيل"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Can action="update" subject="PurchaseInvoice">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(invoice)}
-                          className="h-8 w-8 p-0 text-green-600 hover:text-green-800 hover:bg-green-100 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30"
-                          title="تعديل الفاتورة"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                      </Can>
-                    </div>
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-900/30"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => handlePrintInvoice(invoice)}>
-                          <Printer className="w-4 h-4 ml-2" />
-                          طباعة الفاتورة
-                        </DropdownMenuItem>
-                        <Can action="delete" subject="PurchaseInvoice">
-                          <DropdownMenuItem 
-                            onClick={() => handleDelete(invoice.id)}
-                            className="text-red-600 focus:text-red-600 dark:text-red-400"
-                          >
-                            <Trash2 className="w-4 h-4 ml-2" />
-                            حذف الفاتورة
-                          </DropdownMenuItem>
-                        </Can>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto rounded-xl shadow-lg">
+          <div className="overflow-x-auto rounded-xl shadow-lg">
             <Table className="w-full text-sm" role="grid">
               <TableHeader className="sticky top-0 bg-gray-100 dark:bg-slate-900 z-10">
                 <TableRow className="border-b border-gray-200 dark:border-slate-700">
-                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-3 px-4 w-[50px]">
+                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-2 px-5 w-[50px]">
                     #
                   </TableHead>
-                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-3 px-4 w-[120px]">
+                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-2 px-5 w-[120px]">
                     رقم الفاتورة
                   </TableHead>
-                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-3 px-4 w-[150px]">
+                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-2 px-5 w-[150px]">
                     اسم المورد
                   </TableHead>
-                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-3 px-4 w-[120px]">
+                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-2 px-5 w-[120px] hidden md:table-cell">
                     هاتف المورد
                   </TableHead>
-                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-3 px-4 w-[100px]">
+                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-2 px-5 w-[100px]">
                     التاريخ
                   </TableHead>
-                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-3 px-4 w-[150px]">
+                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-2 px-5 w-[150px]">
                     المستلم
                   </TableHead>
-                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-3 px-4 w-[100px]">
+                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-2 px-5 w-[100px]">
                     عدد المنتجات
                   </TableHead>
-                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-3 px-4 w-[100px]">
+                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-2 px-5 w-[100px]">
                     الإجمالي
                   </TableHead>
-                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-3 px-4 w-[100px]">
+                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-2 px-5 w-[100px]">
                     المدفوع
                   </TableHead>
-                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-3 px-4 w-[100px]">
+                  <TableHead className="font-semibold text-right text-gray-800 dark:text-gray-100 py-2 px-5 w-[100px]">
                     المتبقي
                   </TableHead>
-                  <TableHead className="font-semibold text-center text-gray-800 dark:text-gray-100 py-3 px-4 w-[100px]">
+                  <TableHead className="font-semibold text-center text-gray-800 dark:text-gray-100 py-2 px-5 w-[100px]">
                     حالة الدفع
                   </TableHead>
-                  <TableHead className="font-semibold text-center text-gray-800 dark:text-gray-100 py-3 px-4 w-[180px]">
+                  <TableHead className="font-semibold text-center text-gray-800 dark:text-gray-100 py-2 px-5 w-[180px]">
                     الإجراءات
                   </TableHead>
                 </TableRow>
@@ -444,44 +298,45 @@ export const InvoiceList = ({
                         ? "bg-white dark:bg-slate-800"
                         : "bg-gray-50 dark:bg-slate-900/50"
                     } hover:bg-gray-100 dark:hover:bg-slate-700/50`}
+                    onClick={() => handleView(invoice)}
                   >
-                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-4">
+                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-5">
                       {invoices.length - index}
                     </TableCell>
-                    <TableCell className="text-sm text-right font-medium dark:text-gray-200 py-3 px-4">
+                    <TableCell className="text-sm text-right font-medium dark:text-gray-200 py-3 px-5">
                       {invoice.invoice_number}
                     </TableCell>
                     <TableCell
-                      className="text-sm text-right dark:text-gray-300 py-3 px-4 truncate max-w-[150px]"
+                      className="text-sm text-right dark:text-gray-300 py-3 px-5 truncate"
                       title={invoice.supplier?.name}
                     >
                       {invoice.supplier?.name || "غير محدد"}
                     </TableCell>
-                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-4">
+                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-5 hidden md:table-cell">
                       {invoice.supplier?.phone || "غير محدد"}
                     </TableCell>
-                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-4">
+                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-5">
                       {formatDate(invoice.date)}
                     </TableCell>
-                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-4">
+                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-5">
                       <span>
                         {invoice.cashier_display_name ||
                           invoice.user_display_name}
                       </span>
                     </TableCell>
-                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-4">
+                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-5">
                       {invoice.items?.length || 0}
                     </TableCell>
-                    <TableCell className="text-sm text-right font-semibold dark:text-gray-200 py-3 px-4">
+                    <TableCell className="text-sm text-right font-semibold dark:text-gray-200 py-3 px-5">
                       {safeToFixed(invoice.total_amount)} ج.م
                     </TableCell>
-                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-4">
+                    <TableCell className="text-sm text-right dark:text-gray-300 py-3 px-5">
                       {safeToFixed(invoice.amount_paid)} ج.م
                     </TableCell>
-                    <TableCell className="text-sm text-right font-semibold dark:text-gray-200 py-3 px-4">
+                    <TableCell className="text-sm text-right font-semibold dark:text-gray-200 py-3 px-5">
                       {safeToFixed(invoice.total_amount - invoice.amount_paid)} ج.م
                     </TableCell>
-                    <TableCell className="text-center py-3 px-4">
+                    <TableCell className="text-center py-3 px-5">
                       <Badge
                         variant={
                           invoice.amount_paid >= invoice.total_amount
@@ -499,8 +354,8 @@ export const InvoiceList = ({
                           : "غير مدفوع"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-center py-3 px-4">
-                      <div className="flex justify-center gap-1">
+                    <TableCell className="text-center py-3 px-5">
+                      <div className="flex md:flex-row flex-col justify-center gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -523,16 +378,18 @@ export const InvoiceList = ({
                             <Edit className="w-5 h-5" />
                           </Button>
                         </Can>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePrintInvoice(invoice)}
-                          className="h-9 w-9 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100 dark:text-purple-400 dark:hover:text-purple-300 dark:hover:bg-purple-900/30 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors rounded-full"
-                          title="طباعة الفاتورة"
-                          aria-label="طباعة الفاتورة"
-                        >
-                          <Printer className="w-5 h-5" />
-                        </Button>
+                        {/* <Can action="print" subject="PurchaseInvoice"> */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePrintInvoice(invoice)}
+                            className="h-9 w-9 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100 dark:text-purple-400 dark:hover:text-purple-300 dark:hover:bg-purple-900/30 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors rounded-full"
+                            title="طباعة الفاتورة"
+                            aria-label="طباعة الفاتورة"
+                          >
+                            <Printer className="w-5 h-5" />
+                          </Button>
+                        {/* </Can> */}
                         <Can action="delete" subject="PurchaseInvoice">
                           <Button
                             variant="ghost"
@@ -553,7 +410,6 @@ export const InvoiceList = ({
               </TableBody>
             </Table>
           </div>
-          
           {totalPages > 1 && (
             <InvoiceTotals
               currentPage={currentPage}

@@ -99,19 +99,7 @@ const Cart = ({
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isCustomerSearchLoading, setIsCustomerSearchLoading] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const { toast } = useToast();
-
-  // كشف حجم الشاشة
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
 
   const form = useForm({
     resolver: zodResolver(customerSchema),
@@ -235,15 +223,15 @@ const Cart = ({
   return (
     <>
       <Card
-        className={`bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm sticky top-24 transition-all duration-300 ${
+        className={`bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm sticky top-24  transition-all duration-300 ${
           showHistory
             ? "border-red-300 dark:border-red-700"
             : "border-blue-100 dark:border-blue-700"
         }`}
       >
-        <CardHeader className="p-4 sm:p-6">
+        <CardHeader>
           <CardTitle
-            className={`flex items-center gap-2 text-lg sm:text-xl ${
+            className={`flex items-center gap-2 ${
               showHistory
                 ? "text-red-800 dark:text-red-300"
                 : "text-blue-800 dark:text-blue-300"
@@ -254,37 +242,37 @@ const Cart = ({
             {cart.length > 0 && (
               <Badge
                 variant="secondary"
-                className="mr-2 dark:bg-slate-700 dark:text-gray-200 text-xs sm:text-sm"
+                className="mr-2 dark:bg-slate-700 dark:text-gray-200"
               >
                 {cart.reduce((sum, item) => sum + item.quantity, 0)}
               </Badge>
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 p-4 sm:p-6">
+        <CardContent className="space-y-4">
           {cart.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-8 text-sm sm:text-base">
+            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
               السلة فارغة
             </p>
           ) : (
             <>
-              <div className="space-y-2 max-h-60 sm:max-h-80 overflow-y-auto">
+              <div className="space-y-2 max-h-80 overflow-y-auto">
                 {cart.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between p-2 sm:p-3 bg-blue-50 dark:bg-slate-700 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-blue-50 dark:bg-slate-700 rounded-lg"
                   >
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-800 dark:text-gray-200 text-sm sm:text-base truncate">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-800 dark:text-gray-200">
                         {item.name}
                       </h4>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400">
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-sm text-blue-600 dark:text-blue-400">
                           {item.sale_price.toFixed(2)} ج.م
                         </p>
                         {item.category && (
                           <Badge
-                            className="text-xs text-white px-1 sm:px-2"
+                            className="text-xs text-white"
                             style={{ backgroundColor: item.category.color }}
                           >
                             {item.category.name}
@@ -292,43 +280,40 @@ const Cart = ({
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2">
                       <Button
-                        size={isMobile ? "icon" : "sm"}
+                        size="sm"
                         variant="outline"
-                        className="dark:border-slate-600 dark:hover:bg-slate-600 h-8 w-8 sm:h-9 sm:w-auto"
+                        className="dark:border-slate-600 dark:hover:bg-slate-600"
                         onClick={() =>
                           updateQuantity(item.id, item.quantity - 1)
                         }
                         disabled={isLoading}
                       >
                         <Minus className="w-3 h-3" />
-                        {!isMobile && <span className="sr-only">نقص</span>}
                       </Button>
-                      <span className="w-6 sm:w-8 text-center font-semibold dark:text-gray-300 text-sm sm:text-base">
+                      <span className="w-8 text-center font-semibold dark:text-gray-300">
                         {item.quantity}
                       </span>
                       <Button
-                        size={isMobile ? "icon" : "sm"}
+                        size="sm"
                         variant="outline"
-                        className="dark:border-slate-600 dark:hover:bg-slate-600 h-8 w-8 sm:h-9 sm:w-auto"
+                        className="dark:border-slate-600 dark:hover:bg-slate-600"
                         onClick={() =>
                           updateQuantity(item.id, item.quantity + 1)
                         }
                         disabled={isLoading || item.quantity >= item.stock}
                       >
                         <Plus className="w-3 h-3" />
-                        {!isMobile && <span className="sr-only">زيادة</span>}
                       </Button>
                       <Button
-                        size={isMobile ? "icon" : "sm"}
+                        size="sm"
                         variant="destructive"
-                        className="dark:bg-red-700 dark:hover:bg-red-800 h-8 w-8 sm:h-9 sm:w-auto"
+                        className="dark:bg-red-700 dark:hover:bg-red-800"
                         onClick={() => removeFromCart(item.id)}
                         disabled={isLoading}
                       >
                         <Trash2 className="w-3 h-3" />
-                        {!isMobile && <span className="sr-only">حذف</span>}
                       </Button>
                     </div>
                   </div>
@@ -338,7 +323,7 @@ const Cart = ({
               <Separator className="dark:bg-slate-700" />
 
               <div className="space-y-3">
-                <div className="flex justify-between items-center text-base sm:text-lg font-bold">
+                <div className="flex justify-between items-center text-lg font-bold">
                   <span className="dark:text-gray-300">الإجمالي:</span>
                   <span className="text-blue-600 dark:text-blue-400">
                     {calculateTotal().toFixed(2)} ج.م
@@ -351,171 +336,165 @@ const Cart = ({
                   </label>
                   <div className="space-y-2">
                     <Can action="create" subject="Customer">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          form.setValue("name", customerName || "");
-                          form.setValue("phone", customerPhone || "");
-                          setIsCustomerDialogOpen(true);
-                        }}
-                        className="w-full bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 text-white border-none hover:from-blue-600 hover:to-purple-600 dark:hover:from-blue-700 dark:hover:to-purple-700 text-sm"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        إضافة عميل جديد
-                      </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        form.setValue("name", customerName || "");
+                        form.setValue("phone", customerPhone || "");
+                        setIsCustomerDialogOpen(true);
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 text-white border-none hover:from-blue-600 hover:to-purple-600 dark:hover:from-blue-700 dark:hover:to-purple-700"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      إضافة عميل جديد
+                    </Button>
                     </Can>
                     <Can action="read" subject="Customer">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="relative">
-                              <User className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" />
-                              <SelectComponent
-                                options={customerOptions}
-                                value={
-                                  customerId && customerName
-                                    ? customerOptions.find(
-                                        (option) => option.value === customerId
-                                      ) || null
-                                    : null
-                                }
-                                onChange={handleCustomerSelect}
-                                onInputChange={handleCustomerInputChange}
-                                inputValue={customerName}
-                                placeholder="ابحث عن العميل أو أدخل اسمًا جديدًا..."
-                                isClearable
-                                isLoading={isCustomerSearchLoading}
-                                noOptionsMessage={() => "لا توجد عملاء مطابقين"}
-                                className="text-right"
-                                classNamePrefix="select"
-                                styles={{
-                                  control: (base) => ({
-                                    ...base,
-                                    borderRadius: "0.5rem",
-                                    borderColor: "#e5e7eb",
-                                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-                                    "&:hover": { borderColor: "#3b82f6" },
-                                    minHeight: "2.5rem",
-                                    padding: "0.25rem",
-                                    backgroundColor: "rgb(255 255 255)",
-                                    fontSize: "0.875rem",
-                                    color: "#1f2937",
-                                    ".dark &": {
-                                      backgroundColor: "#1e293b",
-                                      borderColor: "#334155",
-                                      color: "#f8fafc",
-                                    },
-                                  }),
-                                  option: (base, { isFocused, isSelected }) => ({
-                                    ...base,
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="relative">
+                            <User className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" />
+                            <SelectComponent
+                              options={customerOptions}
+                              value={
+                                customerId && customerName
+                                  ? customerOptions.find(
+                                      (option) => option.value === customerId
+                                    ) || null
+                                  : null
+                              }
+                              onChange={handleCustomerSelect}
+                              onInputChange={handleCustomerInputChange}
+                              inputValue={customerName}
+                              placeholder="ابحث عن العميل أو أدخل اسمًا جديدًا..."
+                              isClearable
+                              isLoading={isCustomerSearchLoading}
+                              noOptionsMessage={() => "لا توجد عملاء مطابقين"}
+                              className="text-right"
+                              classNamePrefix="select"
+                              styles={{
+                                control: (base) => ({
+                                  ...base,
+                                  borderRadius: "0.5rem",
+                                  borderColor: "#e5e7eb",
+                                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+                                  "&:hover": { borderColor: "#3b82f6" },
+                                  minHeight: "2.5rem",
+                                  padding: "0.25rem",
+                                  backgroundColor: "rgb(255 255 255)",
+                                  fontSize: "0.875rem",
+                                  color: "#1f2937",
+                                  ".dark &": {
+                                    backgroundColor: "#1e293b",
+                                    borderColor: "#334155",
+                                    color: "#f8fafc",
+                                  },
+                                }),
+                                option: (base, { isFocused, isSelected }) => ({
+                                  ...base,
+                                  backgroundColor: isSelected
+                                    ? "#3b82f6"
+                                    : isFocused
+                                    ? "#eff6ff"
+                                    : "#ffffff",
+                                  color: isSelected ? "#ffffff" : "#1f2937",
+                                  textAlign: "right",
+                                  padding: "0.5rem 0.75rem",
+                                  cursor: "pointer",
+                                  fontSize: "0.875rem",
+                                  ".dark &": {
                                     backgroundColor: isSelected
                                       ? "#3b82f6"
                                       : isFocused
-                                      ? "#eff6ff"
-                                      : "#ffffff",
-                                    color: isSelected ? "#ffffff" : "#1f2937",
-                                    textAlign: "right",
-                                    padding: "0.5rem 0.75rem",
-                                    cursor: "pointer",
-                                    fontSize: "0.875rem",
-                                    ".dark &": {
-                                      backgroundColor: isSelected
-                                        ? "#3b82f6"
-                                        : isFocused
-                                        ? "#1e40af"
-                                        : "#1e293b",
-                                      color: isSelected ? "#ffffff" : "#f8fafc",
-                                    },
-                                  }),
-                                  menu: (base) => ({
-                                    ...base,
-                                    zIndex: 9999,
-                                    borderRadius: "0.5rem",
-                                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                                    backgroundColor: "#fff",
-                                    ".dark &": {
-                                      backgroundColor: "#1e293b",
-                                      borderColor: "#334155",
-                                    },
-                                  }),
-                                  singleValue: (base) => ({
-                                    ...base,
-                                    color: "#1f2937",
-                                    fontSize: "0.875rem",
-                                    ".dark &": {
-                                      color: "#f8fafc",
-                                    },
-                                  }),
-                                  input: (base) => ({
-                                    ...base,
-                                    textAlign: "right",
-                                    color: "#1f2937",
-                                    fontSize: "0.875rem",
-                                    ".dark &": {
-                                      color: "#f8fafc",
-                                    },
-                                  }),
-                                  placeholder: (base) => ({
-                                    ...base,
-                                    color: "#9ca3af",
-                                    fontSize: "0.875rem",
-                                  }),
-                                }}
-                                formatOptionLabel={(option) => (
-                                  <div className="flex items-center justify-between">
-                                    <span className="truncate">{option.label}</span>
-                                  </div>
-                                )}
-                              />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
-                            <p>ابحث عن العميل أو أدخل اسمًا جديدًا</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                                      ? "#1e40af"
+                                      : "#1e293b",
+                                    color: isSelected ? "#ffffff" : "#f8fafc",
+                                  },
+                                }),
+                                menu: (base) => ({
+                                  ...base,
+                                  zIndex: 9999,
+                                  borderRadius: "0.5rem",
+                                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                                  backgroundColor: "#fff",
+                                  ".dark &": {
+                                    backgroundColor: "#1e293b",
+                                    borderColor: "#334155",
+                                  },
+                                }),
+                                singleValue: (base) => ({
+                                  ...base,
+                                  color: "#1f2937",
+                                  fontSize: "0.875rem",
+                                  ".dark &": {
+                                    color: "#f8fafc",
+                                  },
+                                }),
+                                input: (base) => ({
+                                  ...base,
+                                  textAlign: "right",
+                                  color: "#1f2937",
+                                  fontSize: "0.875rem",
+                                  ".dark &": {
+                                    color: "#f8fafc",
+                                  },
+                                }),
+                                placeholder: (base) => ({
+                                  ...base,
+                                  color: "#9ca3af",
+                                  fontSize: "0.875rem",
+                                }),
+                              }}
+                              formatOptionLabel={(option) => (
+                                <div className="flex items-center justify-between">
+                                  <span>{option.label}</span>
+                                </div>
+                              )}
+                            />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
+                          <p>ابحث عن العميل أو أدخل اسمًا جديدًا</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     </Can>
                   </div>
 
                   <Button
                     onClick={() => handleCheckout(false)}
-                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 dark:from-blue-600 dark:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700 dark:text-gray-200 text-sm sm:text-base"
+                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 dark:from-blue-600 dark:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700 dark:text-gray-200"
                     disabled={isLoading || cart.length === 0}
                   >
                     {isLoading
                       ? "جاري المعالجة..."
-                      : isMobile
-                      ? "إتمام البيع بدون طباعة"
                       : "إتمام البيع بدون طباعة (Ctrl+S)"}
                   </Button>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
-                      className="border-blue-200 hover:bg-blue-50 dark:border-slate-600 dark:hover:bg-slate-700 text-sm"
+                      className="border-blue-200 hover:bg-blue-50 dark:border-slate-600 dark:hover:bg-slate-700"
                       onClick={() => handleCheckout(true)}
                       disabled={isLoading || cart.length === 0}
                     >
                       <Printer className="w-4 h-4 mr-2" />
-                      {isMobile ? "طباعة الفاتورة" : "طباعة الفاتورة (Ctrl+Alt+P)"}
+                      طباعة الفاتورة (Ctrl+Alt+P)
                     </Button>
                     <Button
                       onClick={() => handleCheckout(true)}
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 dark:from-green-600 dark:to-emerald-600 dark:hover:from-green-700 dark:hover:to-emerald-700 dark:text-gray-200 text-sm"
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 dark:from-green-600 dark:to-emerald-600 dark:hover:from-green-700 dark:hover:to-emerald-700 dark:text-gray-200"
                       disabled={isLoading || cart.length === 0}
                     >
-                      {isLoading 
-                        ? "جاري المعالجة..." 
-                        : isMobile 
-                        ? "بيع وطباعة" 
-                        : "بيع وطباعة (Ctrl+P)"}
+                      {isLoading ? "جاري المعالجة..." : "بيع وطباعة (Ctrl+P)"}
                     </Button>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 dark:text-blue-400" />
-                    <span className="font-medium dark:text-gray-300 text-sm sm:text-base">
+                    <Wallet className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                    <span className="font-medium dark:text-gray-300">
                       طريقة الدفع
                     </span>
                   </div>
@@ -525,7 +504,7 @@ const Cart = ({
                     disabled={isLoading}
                   >
                     <SelectTrigger
-                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200 text-sm sm:text-base"
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
                       dir="rtl"
                     >
                       <SelectValue placeholder="اختر طريقة الدفع" />
@@ -540,7 +519,7 @@ const Cart = ({
                     <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
                       <SelectItem
                         value="cash"
-                        className="dark:hover:bg-slate-700 text-sm"
+                        className="dark:hover:bg-slate-700"
                       >
                         <div className="flex items-center">
                           <Wallet className="w-4 h-4 mr-2" />
@@ -549,7 +528,7 @@ const Cart = ({
                       </SelectItem>
                       <SelectItem
                         value="vodafone_cash"
-                        className="dark:hover:bg-slate-700 text-sm"
+                        className="dark:hover:bg-slate-700"
                       >
                         <div className="flex items-center">
                           <CreditCard className="w-4 h-4 mr-2" />
@@ -558,7 +537,7 @@ const Cart = ({
                       </SelectItem>
                       <SelectItem
                         value="insta_pay"
-                        className="dark:hover:bg-slate-700 text-sm"
+                        className="dark:hover:bg-slate-700"
                       >
                         <div className="flex items-center">
                           <CreditCard className="w-4 h-4 mr-2" />
@@ -569,8 +548,8 @@ const Cart = ({
                   </Select>
 
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 dark:text-blue-400" />
-                    <span className="font-medium dark:text-gray-300 text-sm sm:text-base truncate">
+                    <User className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                    <span className="font-medium dark:text-gray-300">
                       {customerName || "عميل فوري"}{" "}
                       {customerPhone ? `(${customerPhone})` : ""}
                     </span>

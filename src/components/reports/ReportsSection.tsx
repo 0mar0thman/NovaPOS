@@ -1957,7 +1957,7 @@ const ReportsSection = () => {
 
   return (
     <div
-      className="container mx-auto p-0 space-y-8 bg-gray-100 dark:bg-slate-900 min-h-screen transition-all duration-300"
+      className="container mx-auto p-6 space-y-8 bg-gray-100 dark:bg-slate-900 min-h-screen transition-all duration-300"
       dir="rtl"
     >
       <Card className="border-0 shadow-lg bg-gradient-to-b from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 dark:border-slate-700 transition-all duration-300">

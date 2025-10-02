@@ -635,8 +635,8 @@ const NewInvoiceDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-7xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border-2 border-blue-200 dark:border-slate-700 rounded-xl p-3 sm:p-6">
-        <DialogHeader className="px-1 sm:px-0">
+      <DialogContent className="sm:max-w-7xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border-2 border-blue-200 dark:border-slate-700 rounded-xl p-4 sm:p-6">
+        <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl font-semibold text-blue-900 dark:text-blue-300 flex items-center gap-2">
             <Receipt className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             إنشاء فاتورة جديدة
@@ -645,10 +645,8 @@ const NewInvoiceDialog = ({
             قم بملء تفاصيل الفاتورة وإضافة المنتجات باستخدام البحث أو الباركود
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="space-y-4 sm:space-y-6 p-1 sm:p-4">
-          {/* Customer Information - Mobile Responsive */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="space-y-6 p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="customer" className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                 <div className="flex justify-between items-center">
@@ -662,10 +660,10 @@ const NewInvoiceDialog = ({
                           setNewCustomerFormData({ ...newCustomerFormData, name: customerName, phone });
                           setIsAddCustomerDialogOpen(true);
                         }}
-                        className="mt-1 text-xs bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 text-white border-none hover:from-blue-600 hover:to-purple-600 dark:hover:from-blue-700 dark:hover:to-purple-700"
+                        className="mt-2 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 text-white border-none hover:from-blue-600 hover:to-purple-600 dark:hover:from-blue-700 dark:hover:to-purple-700"
                       >
-                        <Plus className="w-3 h-3 mr-1" />
-                        إضافة عميل
+                        <Plus className="w-4 h-4 mr-2" />
+                        إضافة عميل جديد
                       </Button>
                     )}
                   </div>
@@ -683,7 +681,7 @@ const NewInvoiceDialog = ({
                           onChange={handleCustomerSelect}
                           onInputChange={handleCustomerInputChange}
                           inputValue={inputSearch}
-                          placeholder="ابحث عن العميل..."
+                          placeholder="ابحث عن العميل أو أدخل اسمًا جديدًا..."
                           isClearable
                           isLoading={isCustomerSearchLoading}
                           noOptionsMessage={() => "لا توجد عملاء مطابقين"}
@@ -777,7 +775,6 @@ const NewInvoiceDialog = ({
                 </TooltipProvider>
               </div>
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                 رقم الهاتف
@@ -805,7 +802,6 @@ const NewInvoiceDialog = ({
                 )}
               </div>
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                 ملاحظات
@@ -816,798 +812,707 @@ const NewInvoiceDialog = ({
                   id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="ملاحظات (اختياري)"
+                  placeholder="أدخل ملاحظات (اختياري)"
                   className="pr-10 pl-3 py-2 h-10 text-sm border-gray-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 rounded-lg shadow-sm dark:bg-slate-700 dark:text-gray-200"
                 />
               </div>
             </div>
           </div>
-
-          {/* Product Search Section */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-base font-semibold text-gray-800 dark:text-gray-200">إضافة منتجات</Label>
-              
-              {/* Mode Toggle */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={isBarcodeMode ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setIsBarcodeMode(!isBarcodeMode);
-                      setSearchValue("");
-                      setBarcodeError(null);
-                      setHasPreviousError(false);
-                      setLastFailedBarcode(null);
-                      setRetryCount(0);
-                    }}
-                    className={`h-8 px-3 text-sm ${isBarcodeMode ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800" : "border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-700"}`}
-                  >
-                    {isBarcodeMode ? <Search className="w-4 h-4 mr-1" /> : <Barcode className="w-4 h-4 mr-1" />}
-                    {isBarcodeMode ? "البحث بالاسم" : "البحث بالباركود"}
-                  </Button>
-                </div>
-
-                {isBarcodeMode && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      {autoMode ? (
-                        <div className="flex items-center gap-2 text-green-700 dark:text-green-400 text-sm">
-                          <Zap className="w-4 h-4" />
-                          <span className="font-medium">تلقائي</span>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  {isBarcodeMode ? (
+                    <>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          {autoMode ? (
+                            <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                              <Zap className="w-5 h-5" />
+                              <span className="font-medium">الوضع التلقائي</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                              <Hand className="w-5 h-5" />
+                              <span className="font-medium">الوضع اليدوي</span>
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 text-sm">
-                          <Hand className="w-4 h-4" />
-                          <span className="font-medium">يدوي</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-sm ${autoMode ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-500 dark:text-gray-400"}`}>تلقائي</span>
+                          <Switch
+                            dir="ltr"
+                            checked={autoMode}
+                            onCheckedChange={setAutoMode}
+                            className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-blue-500 dark:data-[state=checked]:bg-green-600 dark:data-[state=unchecked]:bg-blue-600"
+                          />
+                          <span className={`text-sm ${!autoMode ? "text-blue-600 dark:text-blue-400 font-medium" : "text-gray-500 dark:text-gray-400"}`}>يدوي</span>
+                        </div>
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="relative">
+                              <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
+                              <Input
+                                value={searchValue}
+                                onChange={(e) => setSearchValue(e.target.value)}
+                                onKeyDown={handleSearchKeyDown}
+                                placeholder={autoMode ? "امسح الباركود للإضافة التلقائية..." : "أدخل الباركود واضغط إدخال..."}
+                                className="pr-10 pl-3 py-2 h-10 text-sm font-mono border-gray-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 rounded-lg shadow-sm dark:bg-slate-700 dark:text-gray-200 text-center"
+                                disabled={isLoading || retryCount >= 3}
+                                autoFocus
+                              />
+                              <div className="absolute top-2 left-3 text-gray-400 dark:text-gray-500 text-sm">
+                                {searchValue.length}/{AUTO_SUBMIT_LENGTH}
+                              </div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
+                            <p>{autoMode ? "امسح الباركود للإضافة تلقائيًا" : "أدخل الباركود واضغط Enter للإضافة"}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      {barcodeError && (
+                        <div className="mt-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 flex items-start gap-2 text-red-700 dark:text-red-200">
+                          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                          <span>{barcodeError}</span>
+                          <Can action="create" subject="Product">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setIsAddProductDialogOpen(true)}
+                              className="ml-auto bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 text-white border-none hover:from-blue-600 hover:to-purple-600 dark:hover:from-blue-700 dark:hover:to-purple-700"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              إضافة منتج جديد
+                            </Button>
+                          </Can>
                         </div>
                       )}
-                    </div>
-                    <Switch
-                      dir="ltr"
-                      checked={autoMode}
-                      onCheckedChange={setAutoMode}
-                      className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-blue-500 dark:data-[state=checked]:bg-green-600 dark:data-[state=unchecked]:bg-blue-600 scale-90"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Search Input */}
-              <div className="relative">
-                {isBarcodeMode ? (
-                  <>
+                      {(hasPreviousError || retryCount >= 3) && (
+                        <div className="mt-1 text-xs text-red-500 dark:text-red-400 flex items-center gap-1 justify-center">
+                          <AlertCircle className="w-3 h-3" />
+                          <span>{retryCount >= 3 ? "تم الوصول إلى الحد الأقصى للمحاولات. يرجى إدخال باركود جديد." : "حدث خطأ في الباركود السابق. يرجى إدخال باركود جديد."}</span>
+                        </div>
+                      )}
+                      {!autoMode && (
+                        <Button
+                          onClick={handleBarcodeSubmit}
+                          className="mt-2 w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-blue-300 hover:scale-[1.02] dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 shadow-lg text-white font-semibold rounded-lg"
+                          disabled={isLoading || searchValue.length < 1 || hasPreviousError || retryCount >= 3}
+                        >
+                          إضافة المنتج
+                        </Button>
+                      )}
+                    </>
+                  ) : (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="relative">
                             <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
-                            <Input
-                              value={searchValue}
-                              onChange={(e) => setSearchValue(e.target.value)}
-                              onKeyDown={handleSearchKeyDown}
-                              placeholder={autoMode ? "امسح الباركود..." : "أدخل الباركود واضغط إدخال..."}
-                              className="pr-10 pl-3 py-2 h-10 text-sm font-mono border-gray-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 rounded-lg shadow-sm dark:bg-slate-700 dark:text-gray-200 text-center"
-                              disabled={isLoading || retryCount >= 3}
-                              autoFocus
-                            />
-                            <div className="absolute top-2 left-3 text-gray-400 dark:text-gray-500 text-xs">
-                              {searchValue.length}/{AUTO_SUBMIT_LENGTH}
-                            </div>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
-                          <p>{autoMode ? "امسح الباركود للإضافة تلقائيًا" : "أدخل الباركود واضغط Enter للإضافة"}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    
-                    {barcodeError && (
-                      <div className="mt-2 p-2 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 flex items-start gap-2 text-red-700 dark:text-red-200 text-sm">
-                        <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                        <span className="flex-1">{barcodeError}</span>
-                        <Can action="create" subject="Product">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsAddProductDialogOpen(true)}
-                            className="bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 text-white border-none hover:from-blue-600 hover:to-purple-600 dark:hover:from-blue-700 dark:hover:to-purple-700 text-xs"
-                          >
-                            <Plus className="w-3 h-3 mr-1" />
-                            إضافة منتج
-                          </Button>
-                        </Can>
-                      </div>
-                    )}
-                    
-                    {!autoMode && (
-                      <Button
-                        onClick={handleBarcodeSubmit}
-                        className="mt-2 w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-blue-300 hover:scale-[1.02] dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 shadow-lg text-white font-semibold rounded-lg text-sm py-2"
-                        disabled={isLoading || searchValue.length < 1 || hasPreviousError || retryCount >= 3}
-                      >
-                        إضافة المنتج
-                      </Button>
-                    )}
-                  </>
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="relative">
-                          <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
-                          <Select
-                            options={productOptions}
-                            value={searchValue ? { value: "", label: searchValue, product: {} as Product } : null}
-                            onChange={handleAddProduct}
-                            onInputChange={(input) => setSearchValue(input.trim())}
-                            inputValue={searchValue}
-                            placeholder="ابحث باسم المنتج..."
-                            isClearable
-                            noOptionsMessage={() => "لا توجد منتجات مطابقة"}
-                            className="text-right"
-                            classNamePrefix="select"
-                            styles={{
-                              control: (base) => ({
-                                ...base,
-                                borderRadius: "0.5rem",
-                                borderColor: "#e5e7eb",
-                                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-                                "&:hover": { borderColor: "#3b82f6" },
-                                minHeight: "2.5rem",
-                                padding: "0.25rem",
-                                backgroundColor: "rgb(255 255 255)",
-                                fontSize: "0.875rem",
-                                color: "#1f2937",
-                                ".dark &": {
-                                  backgroundColor: "#1e293b",
-                                  borderColor: "#334155",
-                                  color: "#f8fafc",
-                                },
-                              }),
-                              option: (base, { isFocused, isSelected }) => ({
-                                ...base,
-                                backgroundColor: isSelected
-                                  ? "#3b82f6"
-                                  : isFocused
-                                  ? "#eff6ff"
-                                  : "#ffffff",
-                                color: isSelected ? "#ffffff" : "#1f2937",
-                                textAlign: "right",
-                                padding: "0.5rem 0.75rem",
-                                cursor: "pointer",
-                                fontSize: "0.875rem",
-                                ".dark &": {
+                            <Select
+                              options={productOptions}
+                              value={searchValue ? { value: "", label: searchValue, product: {} as Product } : null}
+                              onChange={handleAddProduct}
+                              onInputChange={(input) => setSearchValue(input.trim())}
+                              inputValue={searchValue}
+                              placeholder="ابحث باسم المنتج..."
+                              isClearable
+                              noOptionsMessage={() => "لا توجد منتجات مطابقة"}
+                              className="text-right"
+                              classNamePrefix="select"
+                              styles={{
+                                control: (base) => ({
+                                  ...base,
+                                  borderRadius: "0.5rem",
+                                  borderColor: "#e5e7eb",
+                                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+                                  "&:hover": { borderColor: "#3b82f6" },
+                                  minHeight: "2.5rem",
+                                  padding: "0.25rem",
+                                  backgroundColor: "rgb(255 255 255)",
+                                  fontSize: "0.875rem",
+                                  color: "#1f2937",
+                                  ".dark &": {
+                                    backgroundColor: "#1e293b",
+                                    borderColor: "#334155",
+                                    color: "#f8fafc",
+                                  },
+                                }),
+                                option: (base, { isFocused, isSelected }) => ({
+                                  ...base,
                                   backgroundColor: isSelected
                                     ? "#3b82f6"
                                     : isFocused
-                                    ? "#1e40af"
-                                    : "#1e293b",
-                                  color: isSelected ? "#ffffff" : "#f8fafc",
-                                },
-                              }),
-                              menu: (base) => ({
-                                ...base,
-                                zIndex: 9999,
-                                borderRadius: "0.5rem",
-                                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                                backgroundColor: "#fff",
-                                ".dark &": {
-                                  backgroundColor: "#1e293b",
-                                  borderColor: "#334155",
-                                },
-                              }),
-                              singleValue: (base) => ({
-                                ...base,
-                                color: "#1f2937",
-                                fontSize: "0.875rem",
-                                ".dark &": {
-                                  color: "#f8fafc",
-                                },
-                              }),
-                              input: (base) => ({
-                                ...base,
-                                textAlign: "right",
-                                color: "#1f2937",
-                                fontSize: "0.875rem",
-                                ".dark &": {
-                                  color: "#f8fafc",
-                                },
-                              }),
-                              placeholder: (base) => ({
-                                ...base,
-                                color: "#9ca3af",
-                                fontSize: "0.875rem",
-                              }),
-                            }}
-                            formatOptionLabel={(option) => (
-                              <div className="flex items-center justify-between">
-                                <span className="truncate">{option.label}</span>
-                                {option.product.stock <= 0 && (
-                                  <span className="text-red-500 dark:text-red-400 text-xs font-medium bg-red-100 dark:bg-red-900/50 px-2 py-0.5 rounded-full flex-shrink-0">غير متوفر</span>
-                                )}
-                              </div>
-                            )}
-                          />
-                        </div>
+                                    ? "#eff6ff"
+                                    : "#ffffff",
+                                  color: isSelected ? "#ffffff" : "#1f2937",
+                                  textAlign: "right",
+                                  padding: "0.5rem 0.75rem",
+                                  cursor: "pointer",
+                                  fontSize: "0.875rem",
+                                  ".dark &": {
+                                    backgroundColor: isSelected
+                                      ? "#3b82f6"
+                                      : isFocused
+                                      ? "#1e40af"
+                                      : "#1e293b",
+                                    color: isSelected ? "#ffffff" : "#f8fafc",
+                                  },
+                                }),
+                                menu: (base) => ({
+                                  ...base,
+                                  zIndex: 9999,
+                                  borderRadius: "0.5rem",
+                                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                                  backgroundColor: "#fff",
+                                  ".dark &": {
+                                    backgroundColor: "#1e293b",
+                                    borderColor: "#334155",
+                                  },
+                                }),
+                                singleValue: (base) => ({
+                                  ...base,
+                                  color: "#1f2937",
+                                  fontSize: "0.875rem",
+                                  ".dark &": {
+                                    color: "#f8fafc",
+                                  },
+                                }),
+                                input: (base) => ({
+                                  ...base,
+                                  textAlign: "right",
+                                  color: "#1f2937",
+                                  fontSize: "0.875rem",
+                                  ".dark &": {
+                                    color: "#f8fafc",
+                                  },
+                                }),
+                                placeholder: (base) => ({
+                                  ...base,
+                                  color: "#9ca3af",
+                                  fontSize: "0.875rem",
+                                }),
+                              }}
+                              formatOptionLabel={(option) => (
+                                <div className="flex items-center justify-between">
+                                  <span>{option.label}</span>
+                                  {option.product.stock <= 0 && (
+                                    <span className="text-red-500 dark:text-red-400 text-xs font-medium bg-red-100 dark:bg-red-900/50 px-2 py-0.5 rounded-full">غير متوفر</span>
+                                  )}
+                                </div>
+                              )}
+                            />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
+                          <p>ابحث باسم المنتج واختر من القائمة</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+              </div>
+              <div className="d-block">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={isBarcodeMode ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setIsBarcodeMode(!isBarcodeMode);
+                          setSearchValue("");
+                          setBarcodeError(null);
+                          setHasPreviousError(false);
+                          setLastFailedBarcode(null);
+                          setRetryCount(0);
+                        }}
+                        className={`h-8 px-3 text-sm ${isBarcodeMode ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800" : "border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-700"}`}
+                      >
+                        {isBarcodeMode ? <Search className="w-4 h-4 mr-1" /> : <Barcode className="w-4 h-4 mr-1" />}
+                        {isBarcodeMode ? "البحث بالاسم" : "البحث بالباركود"}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
+                      <p>{isBarcodeMode ? "التبديل إلى البحث باسم المنتج" : "التبديل إلى البحث بالباركود"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">المنتجات المختارة</h4>
+                {selectedProducts.length > 0 && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleClearProducts}
+                          className="h-8 px-3 text-sm text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/30"
+                        >
+                          <X className="w-4 h-4 mr-1" />
+                          مسح الكل
+                        </Button>
                       </TooltipTrigger>
                       <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
-                        <p>ابحث باسم المنتج واختر من القائمة</p>
+                        <p>إزالة جميع المنتجات المختارة</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 )}
               </div>
-            </div>
-
-            {/* Selected Products Table */}
-           <div className="space-y-3">
-  <div className="flex items-center justify-between">
-    <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">المنتجات المختارة</h4>
-    {selectedProducts.length > 0 && (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClearProducts}
-              className="h-8 px-3 text-sm text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/30"
-            >
-              <X className="w-4 h-4 mr-1" />
-              مسح الكل
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
-            <p>إزالة جميع المنتجات المختارة</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    )}
-  </div>
-  
-  <div className="border rounded-lg shadow-sm overflow-hidden dark:border-slate-700">
-    {/* جدول للأجهزة المتوسطة والكبيرة */}
-    <div className="hidden md:block overflow-x-auto">
-      <Table className="min-w-full">
-        <TableHeader>
-          <TableRow className="bg-blue-50 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700">
-            <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3 min-w-[120px]">المنتج</TableHead>
-            <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3 min-w-[100px]">الباركود</TableHead>
-            <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3 min-w-[80px]">السعر</TableHead>
-            <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3 min-w-[100px]">الكمية</TableHead>
-            <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3 min-w-[80px]">الإجمالي</TableHead>
-            <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3 min-w-[60px]">إجراءات</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {selectedProducts.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center text-sm text-gray-500 dark:text-gray-400 py-4">
-                لم يتم اختيار أي منتجات بعد
-              </TableCell>
-            </TableRow>
-          ) : (
-            selectedProducts.map((sp, index) => (
-              <TableRow key={sp.product.id} className="hover:bg-gray-50 dark:hover:bg-slate-800">
-                <TableCell className="text-center font-medium text-gray-800 dark:text-gray-200 text-sm">
-                  <div className="truncate max-w-[120px]" title={sp.product.name}>
-                    {sp.product.name}
-                  </div>
-                </TableCell>
-                <TableCell className="text-center text-gray-600 dark:text-gray-400 text-sm">
-                  {sp.product.barcode || 'غير متوفر'}
-                </TableCell>
-                <TableCell className="text-center text-gray-800 dark:text-gray-200 text-sm">
-                  {Number(sp.product.sale_price).toFixed(2)} ج.م
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-center">
-                    <Input
-                      type="number"
-                      min="1"
-                      max={sp.product.stock}
-                      value={sp.quantity}
-                      onChange={(e) => handleQuantityChange(index, parseInt(e.target.value))}
-                      className="w-16 h-8 text-center border-gray-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 rounded-md dark:bg-slate-700 dark:text-gray-200 text-sm"
-                    />
-                  </div>
-                  {sp.quantity > sp.product.stock && (
-                    <p className="text-center text-red-500 dark:text-red-400 mt-1 text-xs">تتجاوز المخزون</p>
-                  )}
-                </TableCell>
-                <TableCell className="text-center text-gray-800 dark:text-gray-200 text-sm">
-                  {(sp.quantity * sp.product.sale_price).toFixed(2)} ج.م
-                </TableCell>
-                <TableCell className="text-center align-middle">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleRemoveProduct(index)}
-                          className="h-7 w-7 rounded-md"
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
-                        <p>إزالة "{sp.product.name}" من الفاتورة</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
-    
-    {/* عرض بطاقات للأجهزة الصغيرة */}
-    <div className="md:hidden">
-      {selectedProducts.length === 0 ? (
-        <div className="text-center text-sm text-gray-500 dark:text-gray-400 py-4">
-          لم يتم اختيار أي منتجات بعد
-        </div>
-      ) : (
-        <div className="divide-y divide-gray-200 dark:divide-slate-700">
-          {selectedProducts.map((sp, index) => (
-            <div key={sp.product.id} className="p-3 hover:bg-gray-50 dark:hover:bg-slate-800">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex-1">
-                  <h5 className="font-medium text-gray-800 dark:text-gray-200 text-sm truncate" title={sp.product.name}>
-                    {sp.product.name}
-                  </h5>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    الباركود: {sp.product.barcode || 'غير متوفر'}
-                  </p>
-                </div>
-                <div className="ml-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleRemoveProduct(index)}
-                          className="h-7 w-7 rounded-md"
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
-                        <p>إزالة "{sp.product.name}" من الفاتورة</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <span className="text-gray-600 dark:text-gray-400">السعر:</span>
-                  <span className="font-medium text-gray-800 dark:text-gray-200 mr-1">
-                    {Number(sp.product.sale_price).toFixed(2)} ج.م
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-600 dark:text-gray-400">الإجمالي:</span>
-                  <span className="font-medium text-gray-800 dark:text-gray-200 mr-1">
-                    {(sp.quantity * sp.product.sale_price).toFixed(2)} ج.م
-                  </span>
-                </div>
-                <div className="col-span-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">الكمية:</span>
-                    <Input
-                      type="number"
-                      min="1"
-                      max={sp.product.stock}
-                      value={sp.quantity}
-                      onChange={(e) => handleQuantityChange(index, parseInt(e.target.value))}
-                      className="w-16 h-8 text-center border-gray-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 rounded-md dark:bg-slate-700 dark:text-gray-200 text-sm"
-                    />
-                  </div>
-                  {sp.quantity > sp.product.stock && (
-                    <p className="text-right text-red-500 dark:text-red-400 mt-1 text-xs">تتجاوز المخزون</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  </div>
-  
-  <div className="text-center text-base font-bold text-blue-900 dark:text-blue-300 mt-3">
-    المجموع: {selectedProducts
-      .reduce((sum, sp) => sum + sp.quantity * sp.product.sale_price, 0)
-      .toFixed(2)} ج.م
-  </div>
-</div>
-          </div>
-        </div>
-
-        {/* Dialogs remain the same */}
-        <Dialog open={isAddCustomerDialogOpen} onOpenChange={setIsAddCustomerDialogOpen}>
-          <DialogContent className="max-w-[95vw] sm:max-w-4xl" dir="rtl">
-            <DialogHeader>
-              <DialogTitle className="dark:text-gray-200">إضافة عميل جديد</DialogTitle>
-              <DialogDescription className="dark:text-gray-400">املأ البيانات لإضافة عميل جديد</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddNewCustomer} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="customer_name" className="text-right dark:text-gray-300">
-                    اسم العميل *
-                  </Label>
-                  <Input
-                    id="customer_name"
-                    value={newCustomerFormData.name}
-                    onChange={(e) =>
-                      setNewCustomerFormData({ ...newCustomerFormData, name: e.target.value })
-                    }
-                    placeholder="أدخل اسم العميل"
-                    required
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="customer_phone" className="text-right dark:text-gray-300">
-                    رقم الهاتف
-                  </Label>
-                  <Input
-                    id="customer_phone"
-                    value={newCustomerFormData.phone}
-                    onChange={(e) =>
-                      setNewCustomerFormData({ ...newCustomerFormData, phone: e.target.value })
-                    }
-                    placeholder="01xxxxxxxxx"
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="customer_email" className="text-right dark:text-gray-300">
-                    البريد الإلكتروني
-                  </Label>
-                  <Input
-                    id="customer_email"
-                    type="email"
-                    value={newCustomerFormData.email}
-                    onChange={(e) =>
-                      setNewCustomerFormData({ ...newCustomerFormData, email: e.target.value })
-                    }
-                    placeholder="أدخل البريد الإلكتروني"
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="customer_address" className="text-right dark:text-gray-300">
-                    العنوان
-                  </Label>
-                  <Input
-                    id="customer_address"
-                    value={newCustomerFormData.address}
-                    onChange={(e) =>
-                      setNewCustomerFormData({ ...newCustomerFormData, address: e.target.value })
-                    }
-                    placeholder="أدخل العنوان"
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
-                <div className="flex flex-col gap-2 sm:col-span-2">
-                  <Label htmlFor="customer_notes" className="text-right dark:text-gray-300">
-                    ملاحظات
-                  </Label>
-                  <Textarea
-                    id="customer_notes"
-                    value={newCustomerFormData.notes}
-                    onChange={(e) =>
-                      setNewCustomerFormData({ ...newCustomerFormData, notes: e.target.value })
-                    }
-                    placeholder="أدخل ملاحظات"
-                    rows={4}
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2 pt-4 justify-end">
-                <Button
-                  type="submit"
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 dark:text-gray-200"
-                >
-                  إضافة
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-700"
-                  onClick={() => {
-                    setIsAddCustomerDialogOpen(false);
-                    setNewCustomerFormData({
-                      name: "",
-                      phone: "",
-                      email: "",
-                      address: "",
-                      notes: "",
-                    });
-                  }}
-                >
-                  إلغاء
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={isAddProductDialogOpen} onOpenChange={setIsAddProductDialogOpen}>
-          <DialogContent className="max-w-[95vw] sm:max-w-4xl" dir="rtl">
-            <DialogHeader>
-              <DialogTitle className="dark:text-gray-200">إضافة منتج جديد</DialogTitle>
-              <DialogDescription className="dark:text-gray-400">املأ البيانات لإضافة منتج جديد</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddNewProduct} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="name" className="text-right dark:text-gray-300">
-                    اسم المنتج *
-                  </Label>
-                  <Input
-                    id="name"
-                    value={newProductFormData.name}
-                    onChange={(e) =>
-                      setNewProductFormData({ ...newProductFormData, name: e.target.value })
-                    }
-                    placeholder="أدخل اسم المنتج"
-                    required
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="sale_price" className="text-right dark:text-gray-300">
-                    سعر البيع *
-                  </Label>
-                  <Input
-                    id="sale_price"
-                    type="number"
-                    step="0.01"
-                    value={newProductFormData.sale_price}
-                    onChange={(e) =>
-                      setNewProductFormData({ ...newProductFormData, sale_price: e.target.value })
-                    }
-                    placeholder="0.00"
-                    required
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="purchase_price" className="text-right dark:text-gray-300">
-                    سعر الشراء *
-                  </Label>
-                  <Input
-                    id="purchase_price"
-                    type="number"
-                    step="0.01"
-                    value={newProductFormData.purchase_price}
-                    onChange={(e) =>
-                      setNewProductFormData({ ...newProductFormData, purchase_price: e.target.value })
-                    }
-                    placeholder="0.00"
-                    required
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="stock" className="text-right dark:text-gray-300">
-                    الكمية المتوفرة
-                  </Label>
-                  <Input
-                    id="stock"
-                    type="number"
-                    value={newProductFormData.stock}
-                    onChange={(e) =>
-                      setNewProductFormData({ ...newProductFormData, stock: e.target.value })
-                    }
-                    placeholder="0"
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="min_stock" className="text-right dark:text-gray-300">
-                    الحد الأدنى للمخزون
-                  </Label>
-                  <Input
-                    id="min_stock"
-                    type="number"
-                    value={newProductFormData.min_stock}
-                    onChange={(e) =>
-                      setNewProductFormData({ ...newProductFormData, min_stock: e.target.value })
-                    }
-                    placeholder="0"
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="barcode" className="text-right dark:text-gray-300">
-                    الباركود *
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="barcode"
-                      value={newProductFormData.barcode}
-                      onChange={(e) =>
-                        setNewProductFormData({ ...newProductFormData, barcode: e.target.value })
-                      }
-                      placeholder="الباركود"
-                      className="flex-1 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-700"
-                      onClick={() =>
-                        setNewProductFormData({
-                          ...newProductFormData,
-                          barcode: Math.floor(Math.random() * 1000000000).toString(),
-                        })
-                      }
-                    >
-                      <Barcode className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="category" className="text-right dark:text-gray-300">
-                    الفئة *
-                  </Label>
-                  <Select<CategoryOption>
-                    options={categoryOptions}
-                    value={selectedCategory}
-                    onChange={(selectedOption: SingleValue<CategoryOption>) => {
-                      if (selectedOption) {
-                        setNewProductFormData({
-                          ...newProductFormData,
-                          category_id: selectedOption.value,
-                        });
-                      }
-                    }}
-                    placeholder="اختر الفئة..."
-                    isSearchable
-                    isClearable
-                    noOptionsMessage={() => "لا توجد فئات متاحة"}
-                    className="text-right"
-                    classNamePrefix="select"
-                    styles={{
-                      control: (base, { isFocused }) => ({
-                        ...base,
-                        padding: "0.5rem",
-                        borderColor: isFocused ? "#3b82f6" : "#e5e7eb",
-                        "&:hover": { borderColor: "#9ca3af" },
-                        minHeight: "40px",
-                        backgroundColor: "#fff",
-                        "@media (prefers-color-scheme: dark)": {
-                          backgroundColor: "#1e293b",
-                          borderColor: "#334155",
-                          color: "#f8fafc",
-                        },
-                      }),
-                      option: (base, { isFocused, isSelected }) => ({
-                        ...base,
-                        backgroundColor: isSelected ? "#3b82f6" : isFocused ? "#eff6ff" : "#ffffff",
-                        color: isSelected ? "#ffffff" : "#1f2937",
-                        textAlign: "right",
-                        padding: "8px 12px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        "@media (prefers-color-scheme: dark)": {
-                          backgroundColor: isSelected ? "#3b82f6" : isFocused ? "#1e40af" : "#1e293b",
-                          color: isSelected ? "#ffffff" : "#f8fafc",
-                        },
-                      }),
-                      menu: (base) => ({
-                        ...base,
-                        zIndex: 9999,
-                        backgroundColor: "#fff",
-                        "@media (prefers-color-scheme: dark)": {
-                          backgroundColor: "#1e293b",
-                          borderColor: "#334155",
-                        },
-                      }),
-                      singleValue: (base) => ({
-                        ...base,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        color: "#1f2937",
-                        "@media (prefers-color-scheme: dark)": {
-                          color: "#f8fafc",
-                        },
-                      }),
-                      input: (base) => ({
-                        ...base,
-                        textAlign: "right",
-                        color: "#1f2937",
-                        "@media (prefers-color-scheme: dark)": {
-                          color: "#f8fafc",
-                        },
-                      }),
-                      placeholder: (base) => ({
-                        ...base,
-                        color: "#9ca3af",
-                      }),
-                    }}
-                    formatOptionLabel={(option) => (
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: option.color }}
-                        />
-                        <span className="truncate">{option.label}</span>
-                      </div>
+              <div className="border rounded-lg shadow-sm overflow-hidden dark:border-slate-700">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-blue-50 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700">
+                      <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3">المنتج</TableHead>
+                      <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3">الباركود</TableHead>
+                      <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3">السعر</TableHead>
+                      <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3">الكمية</TableHead>
+                      <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3">الإجمالي</TableHead>
+                      <TableHead className="text-center text-sm font-semibold text-blue-900 dark:text-blue-300 py-3">إجراءات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedProducts.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-sm text-gray-500 dark:text-gray-400 py-4">
+                          لم يتم اختيار أي منتجات بعد
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      selectedProducts.map((sp, index) => (
+                        <TableRow key={sp.product.id} className="hover:bg-gray-50 dark:hover:bg-slate-800">
+                          <TableCell className="text-center font-medium text-gray-800 dark:text-gray-200">{sp.product.name}</TableCell>
+                          <TableCell className="text-center text-gray-600 dark:text-gray-400">{sp.product.barcode || 'غير متوفر'}</TableCell>
+                          <TableCell className="text-center text-gray-800 dark:text-gray-200">{Number(sp.product.sale_price).toFixed(2)} ج.م</TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="1"
+                              max={sp.product.stock}
+                              value={sp.quantity}
+                              onChange={(e) => handleQuantityChange(index, parseInt(e.target.value))}
+                              className="w-20 h-8 text-center m-auto border-gray-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 rounded-md dark:bg-slate-700 dark:text-gray-200"
+                            />
+                            {sp.quantity > sp.product.stock && (
+                              <p className="text-center text-red-500 dark:text-red-400 mt-1">الكمية تتجاوز المخزون المتاح</p>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center text-gray-800 dark:text-gray-200">{(sp.quantity * sp.product.sale_price).toFixed(2)} ج.م</TableCell>
+                          <TableCell className="text-center align-middle">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleRemoveProduct(index)}
+                                    className="h-8 w-8 rounded-md"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-gray-200">
+                                  <p>إزالة "{sp.product.name}" من الفاتورة</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </TableCell>
+                        </TableRow>
+                      ))
                     )}
-                  />
-                </div>
-                <div className="flex flex-col gap-2 sm:col-span-2 lg:col-span-4">
-                  <Label htmlFor="description" className="text-right dark:text-gray-300">
-                    الوصف
-                  </Label>
-                  <Textarea
-                    id="description"
-                    value={newProductFormData.description}
-                    onChange={(e) =>
-                      setNewProductFormData({ ...newProductFormData, description: e.target.value })
-                    }
-                    placeholder="أدخل وصف المنتج"
-                    rows={4}
-                    className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
-                  />
-                </div>
+                  </TableBody>
+                </Table>
               </div>
-              <div className="flex gap-2 pt-4 justify-end">
-                <Button
-                  type="submit"
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 dark:text-gray-200"
-                >
-                  إضافة
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-700"
-                  onClick={() => {
-                    setIsAddProductDialogOpen(false);
-                    setNewProductFormData({
-                      name: "",
-                      description: "",
-                      sale_price: "",
-                      purchase_price: "",
-                      stock: "",
-                      min_stock: "",
-                      barcode: "",
-                      category_id: "",
-                    });
-                    setSearchValue("");
-                    setBarcodeError(null);
-                  }}
-                >
-                  إلغاء
-                </Button>
+              <div className="text-center text-base font-bold text-blue-900 dark:text-blue-300 mt-3">
+                المجموع: {selectedProducts
+                  .reduce((sum, sp) => sum + sp.quantity * sp.product.sale_price, 0)
+                  .toFixed(2)} ج.م
               </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-start pt-4 border-t border-gray-200 dark:border-slate-700 mt-4">
+            </div>
+          </div>
+          <Dialog open={isAddCustomerDialogOpen} onOpenChange={setIsAddCustomerDialogOpen}>
+            <DialogContent className="sm:max-w-4xl" dir="rtl">
+              <DialogHeader>
+                <DialogTitle className="dark:text-gray-200">إضافة عميل جديد</DialogTitle>
+                <DialogDescription className="dark:text-gray-400">املأ البيانات لإضافة عميل جديد</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddNewCustomer} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="customer_name" className="text-right dark:text-gray-300">
+                      اسم العميل *
+                    </Label>
+                    <Input
+                      id="customer_name"
+                      value={newCustomerFormData.name}
+                      onChange={(e) =>
+                        setNewCustomerFormData({ ...newCustomerFormData, name: e.target.value })
+                      }
+                      placeholder="أدخل اسم العميل"
+                      required
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="customer_phone" className="text-right dark:text-gray-300">
+                      رقم الهاتف
+                    </Label>
+                    <Input
+                      id="customer_phone"
+                      value={newCustomerFormData.phone}
+                      onChange={(e) =>
+                        setNewCustomerFormData({ ...newCustomerFormData, phone: e.target.value })
+                      }
+                      placeholder="01xxxxxxxxx"
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="customer_email" className="text-right dark:text-gray-300">
+                      البريد الإلكتروني
+                    </Label>
+                    <Input
+                      id="customer_email"
+                      type="email"
+                      value={newCustomerFormData.email}
+                      onChange={(e) =>
+                        setNewCustomerFormData({ ...newCustomerFormData, email: e.target.value })
+                      }
+                      placeholder="أدخل البريد الإلكتروني"
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="customer_address" className="text-right dark:text-gray-300">
+                      العنوان
+                    </Label>
+                    <Input
+                      id="customer_address"
+                      value={newCustomerFormData.address}
+                      onChange={(e) =>
+                        setNewCustomerFormData({ ...newCustomerFormData, address: e.target.value })
+                      }
+                      placeholder="أدخل العنوان"
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 sm:col-span-2">
+                    <Label htmlFor="customer_notes" className="text-right dark:text-gray-300">
+                      ملاحظات
+                    </Label>
+                    <Textarea
+                      id="customer_notes"
+                      value={newCustomerFormData.notes}
+                      onChange={(e) =>
+                        setNewCustomerFormData({ ...newCustomerFormData, notes: e.target.value })
+                      }
+                      placeholder="أدخل ملاحظات"
+                      rows={4}
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-4 justify-end">
+                  <Button
+                    type="submit"
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 dark:text-gray-200"
+                  >
+                    إضافة
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-700"
+                    onClick={() => {
+                      setIsAddCustomerDialogOpen(false);
+                      setNewCustomerFormData({
+                        name: "",
+                        phone: "",
+                        email: "",
+                        address: "",
+                        notes: "",
+                      });
+                    }}
+                  >
+                    إلغاء
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={isAddProductDialogOpen} onOpenChange={setIsAddProductDialogOpen}>
+            <DialogContent className="sm:max-w-4xl" dir="rtl">
+              <DialogHeader>
+                <DialogTitle className="dark:text-gray-200">إضافة منتج جديد</DialogTitle>
+                <DialogDescription className="dark:text-gray-400">املأ البيانات لإضافة منتج جديد</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddNewProduct} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="name" className="text-right dark:text-gray-300">
+                      اسم المنتج *
+                    </Label>
+                    <Input
+                      id="name"
+                      value={newProductFormData.name}
+                      onChange={(e) =>
+                        setNewProductFormData({ ...newProductFormData, name: e.target.value })
+                      }
+                      placeholder="أدخل اسم المنتج"
+                      required
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="sale_price" className="text-right dark:text-gray-300">
+                      سعر البيع *
+                    </Label>
+                    <Input
+                      id="sale_price"
+                      type="number"
+                      step="0.01"
+                      value={newProductFormData.sale_price}
+                      onChange={(e) =>
+                        setNewProductFormData({ ...newProductFormData, sale_price: e.target.value })
+                      }
+                      placeholder="0.00"
+                      required
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="purchase_price" className="text-right dark:text-gray-300">
+                      سعر الشراء *
+                    </Label>
+                    <Input
+                      id="purchase_price"
+                      type="number"
+                      step="0.01"
+                      value={newProductFormData.purchase_price}
+                      onChange={(e) =>
+                        setNewProductFormData({ ...newProductFormData, purchase_price: e.target.value })
+                      }
+                      placeholder="0.00"
+                      required
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="stock" className="text-right dark:text-gray-300">
+                      الكمية المتوفرة
+                    </Label>
+                    <Input
+                      id="stock"
+                      type="number"
+                      value={newProductFormData.stock}
+                      onChange={(e) =>
+                        setNewProductFormData({ ...newProductFormData, stock: e.target.value })
+                      }
+                      placeholder="0"
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="min_stock" className="text-right dark:text-gray-300">
+                      الحد الأدنى للمخزون
+                    </Label>
+                    <Input
+                      id="min_stock"
+                      type="number"
+                      value={newProductFormData.min_stock}
+                      onChange={(e) =>
+                        setNewProductFormData({ ...newProductFormData, min_stock: e.target.value })
+                      }
+                      placeholder="0"
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="barcode" className="text-right dark:text-gray-300">
+                      الباركود *
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="barcode"
+                        value={newProductFormData.barcode}
+                        onChange={(e) =>
+                          setNewProductFormData({ ...newProductFormData, barcode: e.target.value })
+                        }
+                        placeholder="الباركود"
+                        className="flex-1 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-700"
+                        onClick={() =>
+                          setNewProductFormData({
+                            ...newProductFormData,
+                            barcode: Math.floor(Math.random() * 1000000000).toString(),
+                          })
+                        }
+                      >
+                        <Barcode className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="category" className="text-right dark:text-gray-300">
+                      الفئة *
+                    </Label>
+                    <Select<CategoryOption>
+                      options={categoryOptions}
+                      value={selectedCategory}
+                      onChange={(selectedOption: SingleValue<CategoryOption>) => {
+                        if (selectedOption) {
+                          setNewProductFormData({
+                            ...newProductFormData,
+                            category_id: selectedOption.value,
+                          });
+                        }
+                      }}
+                      placeholder="اختر الفئة..."
+                      isSearchable
+                      isClearable
+                      noOptionsMessage={() => "لا توجد فئات متاحة"}
+                      className="text-right"
+                      classNamePrefix="select"
+                      styles={{
+                        control: (base, { isFocused }) => ({
+                          ...base,
+                          padding: "0.5rem",
+                          borderColor: isFocused ? "#3b82f6" : "#e5e7eb",
+                          "&:hover": { borderColor: "#9ca3af" },
+                          minHeight: "40px",
+                          backgroundColor: "#fff",
+                          "@media (prefers-color-scheme: dark)": {
+                            backgroundColor: "#1e293b",
+                            borderColor: "#334155",
+                            color: "#f8fafc",
+                          },
+                        }),
+                        option: (base, { isFocused, isSelected }) => ({
+                          ...base,
+                          backgroundColor: isSelected ? "#3b82f6" : isFocused ? "#eff6ff" : "#ffffff",
+                          color: isSelected ? "#ffffff" : "#1f2937",
+                          textAlign: "right",
+                          padding: "8px 12px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          "@media (prefers-color-scheme: dark)": {
+                            backgroundColor: isSelected ? "#3b82f6" : isFocused ? "#1e40af" : "#1e293b",
+                            color: isSelected ? "#ffffff" : "#f8fafc",
+                          },
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          zIndex: 9999,
+                          backgroundColor: "#fff",
+                          "@media (prefers-color-scheme: dark)": {
+                            backgroundColor: "#1e293b",
+                            borderColor: "#334155",
+                          },
+                        }),
+                        singleValue: (base) => ({
+                          ...base,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          color: "#1f2937",
+                          "@media (prefers-color-scheme: dark)": {
+                            color: "#f8fafc",
+                          },
+                        }),
+                        input: (base) => ({
+                          ...base,
+                          textAlign: "right",
+                          color: "#1f2937",
+                          "@media (prefers-color-scheme: dark)": {
+                            color: "#f8fafc",
+                          },
+                        }),
+                        placeholder: (base) => ({
+                          ...base,
+                          color: "#9ca3af",
+                        }),
+                      }}
+                      formatOptionLabel={(option) => (
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: option.color }}
+                          />
+                          <span className="truncate">{option.label}</span>
+                        </div>
+                      )}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 sm:col-span-2 lg:col-span-4">
+                    <Label htmlFor="description" className="text-right dark:text-gray-300">
+                      الوصف
+                    </Label>
+                    <Textarea
+                      id="description"
+                      value={newProductFormData.description}
+                      onChange={(e) =>
+                        setNewProductFormData({ ...newProductFormData, description: e.target.value })
+                      }
+                      placeholder="أدخل وصف المنتج"
+                      rows={4}
+                      className="w-full dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-4 justify-end">
+                  <Button
+                    type="submit"
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 dark:text-gray-200"
+                  >
+                    إضافة
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-700"
+                    onClick={() => {
+                      setIsAddProductDialogOpen(false);
+                      setNewProductFormData({
+                        name: "",
+                        description: "",
+                        sale_price: "",
+                        purchase_price: "",
+                        stock: "",
+                        min_stock: "",
+                        barcode: "",
+                        category_id: "",
+                      });
+                      setSearchValue("");
+                      setBarcodeError(null);
+                    }}
+                  >
+                    إلغاء
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <DialogFooter className="gap-2 sm:gap-3 sm:justify-start pt-4 border-t border-gray-200 dark:border-slate-700">
           <Button
             onClick={handleSubmit}
             disabled={selectedProducts.length === 0 || isLoading || !!errors.phone}
-            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-700 dark:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800 text-sm text-white font-semibold rounded-lg px-4 py-2 shadow-sm transition-all duration-300"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-700 dark:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800 text-sm text-white font-semibold rounded-lg px-4 py-2 shadow-sm transition-all duration-300"
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
@@ -1621,7 +1526,7 @@ const NewInvoiceDialog = ({
           <Button
             variant="outline"
             onClick={handleClose}
-            className="w-full sm:w-auto text-sm border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg px-4 py-2 shadow-sm transition-all duration-300"
+            className="text-sm border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg px-4 py-2 shadow-sm transition-all duration-300"
           >
             إلغاء
           </Button>

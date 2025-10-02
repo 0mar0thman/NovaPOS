@@ -4,27 +4,27 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "./",
+  base: "./", // مهم جدًا للـ Electron
   server: {
     port: 8080,
     host: "127.0.0.1",
-    proxy: mode === "development"
-      ? {
-          "/api": {
-            target: "http://127.0.0.1:8000",
-            changeOrigin: true,
-            secure: false,
-            ws: true,
-          },
-          "/sanctum": {
-            target: "http://127.0.0.1:8000",
-            changeOrigin: true,
-            secure: false,
-          },
-        }
-      : undefined, // في production مش محتاج proxy
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+      '/sanctum': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
-  plugins: [react()],
+  plugins: [
+    react(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

@@ -36,37 +36,35 @@ const InvoiceDetailDialog = ({
   getPaymentMethodDetails,
 }: InvoiceDetailDialogProps) => {
   const paymentDetails = invoice ? getPaymentMethodDetails(invoice.payment_method) : null;
-  const remainingAmount = invoice ? Number(invoice.total_amount - invoice.paid_amount).toFixed(2) : '0.00';
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-[95vw] sm:max-w-4xl md:max-w-5xl lg:max-w-7xl max-h-[90vh] overflow-y-auto dark:bg-slate-800 dark:border-slate-700 p-3 sm:p-4">
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto dark:bg-slate-800 dark:border-slate-700">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 dark:text-gray-200 text-base sm:text-lg md:text-xl">
+          <DialogTitle className="flex items-center gap-2 dark:text-gray-200">
             <Receipt className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             تفاصيل الفاتورة {invoice?.invoice_number}
           </DialogTitle>
         </DialogHeader>
         <div dir="rtl">
           {invoice && (
-            <div className="space-y-4 sm:space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 p-3 sm:p-4 bg-blue-50 dark:bg-slate-700 rounded-lg">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-blue-50 dark:bg-slate-700 rounded-lg">
                 <div>
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">رقم الفاتورة</span>
-                  <p className="font-semibold dark:text-gray-200 text-sm sm:text-base">{invoice.invoice_number}</p>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">رقم الفاتورة</span>
+                  <p className="font-semibold dark:text-gray-200">{invoice.invoice_number}</p>
                 </div>
                 <div>
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">التاريخ</span>
-                  <p className="font-semibold dark:text-gray-200 text-sm sm:text-base">{new Date(invoice.created_at).toLocaleDateString('en-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">التاريخ</span>
+                  <p className="font-semibold dark:text-gray-200">{new Date(invoice.created_at).toLocaleDateString('en-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
                 <div>
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">الوقت</span>
-                  <p className="font-semibold dark:text-gray-200 text-sm sm:text-base">{invoice.time || '--:--'}</p>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">الوقت</span>
+                  <p className="font-semibold dark:text-gray-200">{invoice.time || '--:--'}</p>
                 </div>
                 <div>
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">البائع</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">البائع</span>
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold dark:text-gray-200 text-sm sm:text-base">{invoice.cashier_name}</p>
+                    <p className="font-semibold dark:text-gray-200">{invoice.cashier_name}</p>
                     {invoice.is_cashier_deleted && (
                       <Badge variant="destructive" className="text-xs">محذوف</Badge>
                     )}
@@ -74,88 +72,86 @@ const InvoiceDetailDialog = ({
                 </div>
                 {invoice.customer_name && (
                   <div>
-                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">العميل</span>
-                    <p className="font-semibold dark:text-gray-200 text-sm sm:text-base">{invoice.customer_name}</p>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">العميل</span>
+                    <p className="font-semibold dark:text-gray-200">{invoice.customer_name}</p>
                   </div>
                 )}
                 {invoice.phone && (
                   <div>
-                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">الهاتف</span>
-                    <p className="font-semibold dark:text-gray-200 text-sm sm:text-base">{invoice.phone}</p>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">الهاتف</span>
+                    <p className="font-semibold dark:text-gray-200">{invoice.phone}</p>
                   </div>
                 )}
                 {paymentDetails && (
-                  <div className={paymentDetails.color + " flex items-center gap-2 dark:text-gray-200 text-sm sm:text-base"}>
-                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-200">طريقة الدفع</span>
+                  <div className={paymentDetails.color + " flex items-center gap-2 dark:text-gray-200"}>
+                    <span className="text-sm text-gray-600 dark:text-gray-200">طريقة الدفع</span>
                     <span>{paymentDetails.icon}</span>
                     <p>{paymentDetails.text}</p>
                   </div>
                 )}
                 <div>
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-200">حالة الدفع</span>
-                  <Badge className={`mt-1 text-xs sm:text-sm ${getPaymentStatusColor(invoice.status)} dark:bg-opacity-20 dark:text-opacity-100 dark:text-gray-200`}>
+                  <span className="text-sm text-gray-600 dark:text-gray-200 ml-2">حالة الدفع</span>
+                  <Badge className={`mt-1 ${getPaymentStatusColor(invoice.status)} dark:bg-opacity-20 dark:text-opacity-100 dark:text-gray-200`}>
                     {getPaymentStatusText(invoice.status)}
                   </Badge>
                 </div>
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 dark:text-gray-200">تفاصيل المنتجات</h3>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="dark:bg-slate-700 hover:dark:bg-slate-700">
-                        <TableHead className="text-right dark:text-gray-300 text-xs sm:text-sm">#</TableHead>
-                        <TableHead className="text-right dark:text-gray-300 text-xs sm:text-sm">المنتج</TableHead>
-                        <TableHead className="text-right dark:text-gray-300 text-xs sm:text-sm">السعر</TableHead>
-                        <TableHead className="text-right dark:text-gray-300 text-xs sm:text-sm">الكمية</TableHead>
-                        <TableHead className="text-right dark:text-gray-300 text-xs sm:text-sm">الإجمالي</TableHead>
+                <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">تفاصيل المنتجات</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="dark:bg-slate-700 hover:dark:bg-slate-700">
+                      <TableHead className="text-right dark:text-gray-300">#</TableHead>
+                      <TableHead className="text-right dark:text-gray-300">المنتج</TableHead>
+                      <TableHead className="text-right dark:text-gray-300">السعر</TableHead>
+                      <TableHead className="text-right dark:text-gray-300">الكمية</TableHead>
+                      <TableHead className="text-right dark:text-gray-300">الإجمالي</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoice.items.map((item, index) => (
+                      <TableRow key={item.id || item.product_id} className="dark:border-slate-700 hover:dark:bg-slate-700/50">
+                        <TableCell className="dark:text-gray-300">{index + 1}</TableCell>
+                        <TableCell className="font-medium dark:text-gray-200">{item.name}</TableCell>
+                        <TableCell className="dark:text-gray-300">{Number(item.unit_price).toFixed(2)} ج.م</TableCell>
+                        <TableCell className="dark:text-gray-300">{item.quantity}</TableCell>
+                        <TableCell className="font-semibold dark:text-gray-200">{Number(item.total_price).toFixed(2)} ج.م</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {invoice.items.map((item, index) => (
-                        <TableRow key={item.id || item.product_id} className="dark:border-slate-700 hover:dark:bg-slate-700/50">
-                          <TableCell className="dark:text-gray-300 text-xs sm:text-sm">{index + 1}</TableCell>
-                          <TableCell className="font-medium dark:text-gray-200 text-xs sm:text-sm">{item.name}</TableCell>
-                          <TableCell className="dark:text-gray-300 text-xs sm:text-sm">{Number(item.unit_price).toFixed(2)} ج.م</TableCell>
-                          <TableCell className="dark:text-gray-300 text-xs sm:text-sm">{item.quantity}</TableCell>
-                          <TableCell className="font-semibold dark:text-gray-200 text-xs sm:text-sm">{Number(item.total_price).toFixed(2)} ج.م</TableCell>
+                    ))}
+                    <TableRow className="bg-gray-50 dark:bg-slate-700 dark:border-slate-700">
+                      <TableCell colSpan={4} className="text-right font-bold dark:text-gray-200">المجموع</TableCell>
+                      <TableCell className="font-bold text-blue-600 dark:text-blue-400">{Number(invoice.total_amount).toFixed(2)} ج.م</TableCell>
+                    </TableRow>
+                    {invoice.paid_amount > 0 && (
+                      <>
+                        <TableRow className="bg-gray-50 dark:bg-slate-700 dark:border-slate-700">
+                          <TableCell colSpan={4} className="text-right font-bold dark:text-gray-200">المبلغ المدفوع</TableCell>
+                          <TableCell className={`font-bold ${invoice.status === 'paid' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
+                            {Number(invoice.paid_amount).toFixed(2)} ج.م
+                          </TableCell>
                         </TableRow>
-                      ))}
-                      <TableRow className="bg-gray-50 dark:bg-slate-700 dark:border-slate-700">
-                        <TableCell colSpan={4} className="text-right font-bold dark:text-gray-200 text-xs sm:text-sm">المجموع الكلي</TableCell>
-                        <TableCell className="font-bold text-blue-600 dark:text-blue-400 text-xs sm:text-sm">{Number(invoice.total_amount).toFixed(2)} ج.م</TableCell>
-                      </TableRow>
-                      {invoice.paid_amount > 0 && (
-                        <>
-                          <TableRow className="bg-gray-50 dark:bg-slate-700 dark:border-slate-700">
-                            <TableCell colSpan={4} className="text-right font-bold dark:text-gray-200 text-xs sm:text-sm">المبلغ المدفوع</TableCell>
-                            <TableCell className={`font-bold ${invoice.status === 'paid' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'} text-xs sm:text-sm`}>
-                              {Number(invoice.paid_amount).toFixed(2)} ج.م
-                            </TableCell>
-                          </TableRow>
-                          <TableRow className="bg-gray-50 dark:bg-slate-700 dark:border-slate-700">
-                            <TableCell colSpan={4} className="text-right font-bold dark:text-gray-200 text-xs sm:text-sm">المبلغ المتبقي</TableCell>
-                            <TableCell className={`font-bold ${Number(remainingAmount) <= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} text-xs sm:text-sm`}>
-                              {remainingAmount} ج.م
-                            </TableCell>
-                          </TableRow>
-                        </>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                        <TableRow className="bg-gray-50 dark:bg-slate-700 dark:border-slate-700">
+                          <TableCell colSpan={4} className="text-right font-bold dark:text-gray-200">الباقي</TableCell>
+                          <TableCell className="font-bold text-red-600 dark:text-red-400">
+                            {Number(invoice.total_amount - invoice.paid_amount).toFixed(2)} ج.م
+                          </TableCell>
+                        </TableRow>
+                      </>
+                    )}
+                  </TableBody>
+                </Table>
               </div>
               {invoice.notes && (
-                <div className="p-3 sm:p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                  <h4 className="font-semibold mb-2 dark:text-gray-200 text-sm sm:text-base">ملاحظات:</h4>
-                  <p className="dark:text-gray-300 text-sm sm:text-base">{invoice.notes}</p>
+                <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                  <h4 className="font-semibold mb-2 dark:text-gray-200">ملاحظات:</h4>
+                  <p className="dark:text-gray-300">{invoice.notes}</p>
                 </div>
               )}
-              <div className="flex flex-col sm:flex-row gap-2 pt-3 sm:pt-4">
+              <div className="flex gap-2 pt-4">
                 {invoice.status !== 'paid' && (
                   <Button
                     variant="outline"
-                    className="flex-1 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700 text-xs sm:text-sm px-2 sm:px-4"
+                    className="flex-1 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700"
                     onClick={onAddPayment}
                   >
                     <Wallet className="w-4 h-4 mr-2" />
@@ -163,7 +159,7 @@ const InvoiceDetailDialog = ({
                   </Button>
                 )}
                 <Button
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 dark:text-gray-200 text-xs sm:text-sm px-2 sm:px-4"
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 dark:text-gray-200"
                   onClick={() => {
                     onPrint();
                     setPrintDialogOpen(true);
@@ -176,7 +172,7 @@ const InvoiceDetailDialog = ({
                 <Button
                   variant="outline"
                   onClick={() => onOpenChange(false)}
-                  className="dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700 text-xs sm:text-sm px-2 sm:px-4"
+                  className="dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700"
                 >
                   إغلاق
                 </Button>

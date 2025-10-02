@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useContext, useRef } from "react";
+import { useState, useEffect, useMemo, useContext } from "react";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/axios";
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, subDays, subWeeks, subMonths } from "date-fns";
@@ -87,6 +87,8 @@ export interface SalesInvoice {
 export type PaymentStatus = "paid" | "partial" | "unpaid";
 type PaginationMode = "daily" | "weekly" | "monthly" | "all";
 
+// ... (بقية الـ interfaces تبقى كما هي)
+
 const SalesInvoices = () => {
   const [invoices, setInvoices] = useState<SalesInvoice[]>([]);
   const [filteredInvoices, setFilteredInvoices] = useState<SalesInvoice[]>([]);
@@ -125,22 +127,14 @@ const SalesInvoices = () => {
 
   const canViewAllInvoices = currentUser?.roles.includes("admin") || currentUser?.roles.includes("manager");
 
-  // استخدام useRef لتتبع ما إذا تم جلب البيانات من قبل (للـ caching البسيط داخل الـ component lifecycle)
-  const hasFetchedCurrentUser = useRef(false);
-  const hasFetchedCustomers = useRef(false);
-  const hasFetchedUsers = useRef(false);
-  const hasFetchedInvoices = useRef(false);
-
-  // دالة محسنة لجلب العملاء مع تحقق من الجلب السابق
+  // دالة محسنة لجلب العملاء
   const fetchCustomers = async () => {
-    if (hasFetchedCustomers.current && customers.length > 0) {
-      return; // لا تجلب إذا تم الجلب من قبل وبيانات موجودة
-    }
     try {
       const response = await api.get("/api/customers", {
         headers: { Authorization: `Bearer ${localStorage.getItem("auth_token")}` },
       });
       
+      // معالجة الاستجابة بغض النظر عن هيكلها
       let customersData = [];
       if (Array.isArray(response.data)) {
         customersData = response.data;
@@ -151,7 +145,6 @@ const SalesInvoices = () => {
       }
       
       setCustomers(customersData);
-      hasFetchedCustomers.current = true;
     } catch (error: any) {
       console.error("Error fetching customers:", error);
       toast({
@@ -162,11 +155,8 @@ const SalesInvoices = () => {
     }
   };
 
-  // دالة محسنة لجلب المستخدمين مع تحقق من الجلب السابق
+  // دالة محسنة لجلب المستخدمين
   const fetchUsers = async () => {
-    if (hasFetchedUsers.current && users.length > 0) {
-      return; // لا تجلب إذا تم الجلب من قبل وبيانات موجودة
-    }
     try {
       const response = await api.get("/api/users", {
         headers: { Authorization: `Bearer ${localStorage.getItem("auth_token")}` },
@@ -183,7 +173,6 @@ const SalesInvoices = () => {
       }
       
       setUsers(fetchedUsers);
-      hasFetchedUsers.current = true;
     } catch (error: any) {
       console.error("Error fetching users:", error);
       toast({
@@ -194,13 +183,8 @@ const SalesInvoices = () => {
     }
   };
 
-  // جلب المستخدم الحالي مع تحقق من الجلب السابق
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      if (hasFetchedCurrentUser.current && currentUser) {
-        setIsLoading(false);
-        return; // لا تجلب إذا تم الجلب من قبل وبيانات موجودة
-      }
       try {
         setIsLoading(true);
         const response = await api.get("/api/get-user", {
@@ -235,7 +219,6 @@ const SalesInvoices = () => {
             permissions: user.permissions || [],
           });
           defineAbilityFor(user.roles[0]);
-          hasFetchedCurrentUser.current = true;
         } else {
           toast({
             title: "خطأ في بيانات المستخدم",
@@ -260,12 +243,14 @@ const SalesInvoices = () => {
     fetchUsers();
   }, [toast]);
 
-  // دالة محسنة لجلب الفواتير مع تحقق من الجلب السابق (جلب مرة واحدة فقط، والترتيب محليًا)
+  // دالة محسنة لجلب الفواتير
   useEffect(() => {
     const fetchInvoices = async () => {
-      if (!currentUser?.id || (hasFetchedInvoices.current && invoices.length > 0)) {
+      if (!currentUser?.id) {
+        setInvoices([]);
+        setFilteredInvoices([]);
         setIsLoading(false);
-        return; // لا تجلب إذا تم الجلب من قبل أو المستخدم غير موجود
+        return;
       }
 
       try {
@@ -274,6 +259,8 @@ const SalesInvoices = () => {
         const params: any = {
           include: "items.product,user,cashier,user.role,cashier.role",
           per_page: 1000,
+          sort_by: "created_at",
+          sort_order: sortOrder,
           with_trashed: true,
         };
 
@@ -286,6 +273,7 @@ const SalesInvoices = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem("auth_token")}` },
         });
 
+        // معالجة الاستجابة بغض النظر عن هيكلها
         let invoicesData = [];
         if (Array.isArray(response.data)) {
           invoicesData = response.data;
@@ -329,7 +317,6 @@ const SalesInvoices = () => {
         });
 
         setInvoices(formattedInvoices);
-        hasFetchedInvoices.current = true;
       } catch (error: any) {
         console.error("Error fetching invoices:", error);
         setError("فشل تحميل الفواتير من السيرفر");
@@ -345,9 +332,9 @@ const SalesInvoices = () => {
     if (currentUser) {
       fetchInvoices();
     }
-  }, [currentUser, toast, canViewAllInvoices, users]);
+  }, [sortOrder, currentUser, toast, canViewAllInvoices, users]);
 
-  // دالة محسنة لجلب المنتجات (يتم فقط عند فتح الديالوج، ومع البحث)
+  // دالة محسنة لجلب المنتجات
   useEffect(() => {
     if (newInvoiceDialogOpen) {
       const fetchProducts = async () => {
@@ -358,6 +345,7 @@ const SalesInvoices = () => {
             headers: { Authorization: `Bearer ${localStorage.getItem("auth_token")}` },
           });
           
+          // معالجة الاستجابة بغض النظر عن هيكلها
           let productsData = [];
           if (Array.isArray(response.data)) {
             productsData = response.data;
@@ -379,16 +367,12 @@ const SalesInvoices = () => {
     }
   }, [newInvoiceDialogOpen, productSearch, toast]);
 
-  // تصفية وترتيب الفواتير محليًا (بدون إعادة جلب من السيرفر)
+  // ... (بقية الدوال تبقى كما هي مع تعديلات طفيفة إذا لزم الأمر)
+
+
+
   useEffect(() => {
     let filtered = [...invoices];
-
-    // الترتيب محليًا حسب created_at
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.created_at).getTime();
-      const dateB = new Date(b.created_at).getTime();
-      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-    });
     
     // التصفية حسب المستخدم المحدد
     if (selectedUserId && selectedUserId !== "all") {
@@ -429,7 +413,7 @@ const SalesInvoices = () => {
     }
     setFilteredInvoices(filtered);
     setCurrentPage(0);
-  }, [invoices, searchTerm, currentDateRange, paymentStatusFilter, customerTypeFilter, selectedUserId, canViewAllInvoices, currentUser, sortOrder]);
+  }, [invoices, searchTerm, currentDateRange, paymentStatusFilter, customerTypeFilter, selectedUserId, canViewAllInvoices, currentUser]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("eg-EG", { year: "numeric", month: "2-digit", day: "2-digit" });

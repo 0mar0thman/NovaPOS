@@ -16,8 +16,7 @@ import {
   ChevronRight,
   ChevronLeft,
   ChevronsRight,
-  ChevronsLeft,
-  MoreVertical
+  ChevronsLeft
 } from "lucide-react";
 import {
   Table,
@@ -29,12 +28,6 @@ import {
 } from "@/components/ui/table";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { ar } from "date-fns/locale";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface SaleInvoice {
   id: string;
@@ -109,21 +102,6 @@ const ReturnManager = ({
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // الكشف عن حجم الشاشة
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-
-    return () => {
-      window.removeEventListener('resize', checkScreenSize);
-    };
-  }, []);
 
   // تصنيف الفواتير حسب حالة الاسترجاع
   const classifyInvoice = (invoice: SaleInvoice): "nonReturned" | "partiallyReturned" | "fullyReturned" => {
@@ -271,101 +249,11 @@ const ReturnManager = ({
     }
   };
 
-  // معالج النقر على كارد الإحصائيات
-  const handleStatCardClick = (statType: string) => {
-    setActiveTab(statType === "total" ? "all" : statType);
-  };
-
-  // عرض الجدول على الشاشات الصغيرة
-  const renderMobileInvoiceCard = (invoice: SaleInvoice) => {
-    const totalQuantity = invoice.items.reduce(
-      (sum, item) => sum + (item.quantity - (item.returned_quantity || 0)),
-      0
-    );
-    const canReturn = invoice.items.some(
-      (item) => item.quantity > (item.returned_quantity || 0)
-    );
-    const amountAfterReturn = calculateAmountAfterReturn(invoice);
-
-    return (
-      <Card key={invoice.id} className="mb-4">
-        <CardContent className="p-4">
-          <div className="flex justify-between items-start mb-3">
-            <div className="flex items-center gap-2">
-              {getReturnStatusIcon(invoice)}
-              {getReturnStatusBadge(invoice)}
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">رقم الفاتورة:</span>
-              <span className="font-medium">{invoice.invoice_number}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">التاريخ:</span>
-              <span className="text-sm">
-                {format(new Date(invoice.created_at), "yyyy/MM/dd HH:mm", { locale: ar })}
-              </span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">العميل:</span>
-              <span className="text-sm">
-                {invoice.customer_name || "غير محدد"}
-                {invoice.phone ? ` (${invoice.phone})` : ""}
-              </span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">المبلغ الأصلي:</span>
-              <span className="text-sm">{Number(invoice.total_amount).toFixed(2)} ج.م</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">المبلغ بعد الاسترجاع:</span>
-              <span className="text-sm">{Number(amountAfterReturn).toFixed(2)} ج.م</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">طريقة الدفع:</span>
-              <span className="text-sm">{getPaymentMethodName(invoice.payment_method)}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">الكمية المباعة:</span>
-              <span className="text-sm">{totalQuantity}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">الكاشير:</span>
-              <span className="text-sm">{invoice.cashier.name}</span>
-            </div>
-          </div>
-          
-          <div className="mt-3 pt-3 border-t">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setupReturn(invoice)}
-              disabled={!canReturn}
-              className="w-full flex items-center justify-center gap-1"
-            >
-              <RotateCcw className="h-4 w-4" />
-              استرجاع
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
-
   return (
     <Card className="w-full">
       <CardHeader>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
-          <div className="flex flex-col gap-2">
+          <div>
             <CardTitle className="flex items-center gap-2">
               <RotateCcw className="h-5 w-5" />
               إدارة عمليات الاسترجاع
@@ -373,6 +261,23 @@ const ReturnManager = ({
             <CardDescription>
               نظام متكامل لإدارة وتتبع عمليات استرجاع الفواتير
             </CardDescription>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                onExportData("csv", filteredInvoices, {
+                  searchTerm,
+                  dateFilter,
+                })
+              }
+              className="bg-blue-600 text-white hover:text-gray-100 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 dark:text-gray-200"
+            >
+              <Download className="w-4 h-4 ml-2" />
+              تصدير CSV
+            </Button>
           </div>
         </div>
 
@@ -386,7 +291,7 @@ const ReturnManager = ({
               className="pr-9"
             />
           </div>
-        <div className="flex gap-2 justify-between w-full md:w-auto">
+
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <select
@@ -401,35 +306,13 @@ const ReturnManager = ({
               <option value="30days">آخر 30 يوم</option>
             </select>
           </div>
-           <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                onExportData("csv", filteredInvoices, {
-                  searchTerm,
-                  dateFilter,
-                })
-              }
-              className="bg-blue-600 text-white hover:text-gray-100 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 dark:text-gray-200"
-            >
-              <Download className="w-4 h-4 ml-2" />
-              <span>تصدير CSV</span>
-            </Button>
-          </div>
-          </div>
         </div>
       </CardHeader>
 
       <CardContent>
-        {/* إحصائيات سريعة - قابلة للنقر */}
+        {/* إحصائيات سريعة */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card 
-            className={`bg-muted/50 cursor-pointer transition-all duration-200 hover:shadow-md ${
-              activeTab === "all" ? "ring-2 ring-primary" : ""
-            }`}
-            onClick={() => handleStatCardClick("total")}
-          >
+          <Card className="bg-muted/50">
             <CardContent className="p-4">
               <div className="flex justify-between items-center">
                 <div>
@@ -441,12 +324,7 @@ const ReturnManager = ({
             </CardContent>
           </Card>
 
-          <Card 
-            className={`bg-green-50 dark:bg-green-950/20 cursor-pointer transition-all duration-200 hover:shadow-md ${
-              activeTab === "nonReturned" ? "ring-2 ring-green-500" : ""
-            }`}
-            onClick={() => handleStatCardClick("nonReturned")}
-          >
+          <Card className="bg-green-50 dark:bg-green-950/20">
             <CardContent className="p-4">
               <div className="flex justify-between items-center">
                 <div>
@@ -460,12 +338,7 @@ const ReturnManager = ({
             </CardContent>
           </Card>
 
-          <Card 
-            className={`bg-yellow-50 dark:bg-yellow-950/20 cursor-pointer transition-all duration-200 hover:shadow-md ${
-              activeTab === "partiallyReturned" ? "ring-2 ring-yellow-500" : ""
-            }`}
-            onClick={() => handleStatCardClick("partiallyReturned")}
-          >
+          <Card className="bg-yellow-50 dark:bg-yellow-950/20">
             <CardContent className="p-4">
               <div className="flex justify-between items-center">
                 <div>
@@ -479,12 +352,7 @@ const ReturnManager = ({
             </CardContent>
           </Card>
 
-          <Card 
-            className={`bg-red-50 dark:bg-red-950/20 cursor-pointer transition-all duration-200 hover:shadow-md ${
-              activeTab === "fullyReturned" ? "ring-2 ring-red-500" : ""
-            }`}
-            onClick={() => handleStatCardClick("fullyReturned")}
-          >
+          <Card className="bg-red-50 dark:bg-red-950/20">
             <CardContent className="p-4">
               <div className="flex justify-between items-center">
                 <div>
@@ -499,178 +367,114 @@ const ReturnManager = ({
           </Card>
         </div>
 
-        {/* عرض الفواتير المصفاة مباشرة بدون ألسنة تبويب */}
-        <div className="mt-6">
-          {filteredInvoices.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <div className="flex flex-col items-center gap-3">
-                <BarChart3 className="h-12 w-12 text-muted-foreground/40" />
-                <p className="text-lg font-medium">لا توجد فواتير تطابق معايير البحث</p>
-                <p className="text-sm max-w-md">
-                  حاول تعديل معايير البحث أو تغيير عوامل التصفية للعثور على الفواتير المطلوبة
-                </p>
+        {/* ألسنة التبويب */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-4 mb-4">
+            <TabsTrigger value="all" className="flex items-center gap-1">
+              <BarChart3 className="h-4 w-4" />
+              الكل
+            </TabsTrigger>
+            <TabsTrigger
+              value="nonReturned"
+              className="flex items-center gap-1"
+            >
+              <CheckCircle className="h-4 w-4" />
+              غير مسترجعة
+            </TabsTrigger>
+            <TabsTrigger
+              value="partiallyReturned"
+              className="flex items-center gap-1"
+            >
+              <AlertCircle className="h-4 w-4" />
+              جزئياً
+            </TabsTrigger>
+            <TabsTrigger
+              value="fullyReturned"
+              className="flex items-center gap-1"
+            >
+              <XCircle className="h-4 w-4" />
+              كلياً
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value={activeTab} className="mt-0">
+            {paginatedInvoices.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>لا توجد فواتير تطابق معايير البحث</p>
               </div>
-            </div>
-          ) : isMobile ? (
-            <div className="space-y-3">
-              {paginatedInvoices.map(renderMobileInvoiceCard)}
-            </div>
-          ) : (
-            <div className="rounded-lg border overflow-hidden shadow-sm bg-card">
-              <div className="overflow-x-auto">
-                <Table
-                  className="
-                    min-w-full
-                    [&_th]:px-4 [&_th]:py-3 [&_th]:text-sm [&_th]:font-semibold
-                    [&_th]:text-foreground/80 [&_th]:bg-muted/30
-                    [&_td]:px-4 [&_td]:py-3 [&_td]:text-sm [&_td]:align-middle
-                  "
-                >
+            ) : (
+              <div className="rounded-md border">
+                <Table>
                   <TableHeader>
-                    <TableRow className="hover:bg-transparent border-b">
-                      <TableHead className="min-w-[120px] text-center hidden sm:table-cell">
-                        حالة الاسترجاع
-                      </TableHead>
-                      <TableHead className="min-w-[100px] text-center">
-                        رقم الفاتورة
-                      </TableHead>
-                      <TableHead className="min-w-[140px] text-center hidden md:table-cell">
-                        التاريخ
-                      </TableHead>
-                      <TableHead className="min-w-[150px] text-center hidden lg:table-cell">
-                        العميل
-                      </TableHead>
-                      <TableHead className="min-w-[120px] text-center hidden xl:table-cell">
-                        المبلغ الأصلي
-                      </TableHead>
-                      <TableHead className="min-w-[120px] text-center">
-                        المبلغ بعد الاسترجاع
-                      </TableHead>
-                      <TableHead className="min-w-[100px] text-center hidden lg:table-cell">
-                        طريقة الدفع
-                      </TableHead>
-                      <TableHead className="min-w-[80px] text-center hidden md:table-cell">
-                        الكمية
-                      </TableHead>
-                      <TableHead className="min-w-[120px] text-center hidden xl:table-cell">
-                        الكاشير
-                      </TableHead>
-                      <TableHead className="min-w-[100px] text-center">
-                        الإجراءات
-                      </TableHead>
+                    <TableRow>
+                      <TableHead>حالة الاسترجاع</TableHead>
+                      <TableHead>رقم الفاتورة</TableHead>
+                      <TableHead>التاريخ</TableHead>
+                      <TableHead>العميل</TableHead>
+                      <TableHead>المبلغ قبل الاسترجاع</TableHead>
+                      <TableHead>المبلغ بعد الاسترجاع</TableHead>
+                      <TableHead>طريقة الدفع</TableHead>
+                      <TableHead>الكمية المباعة</TableHead>
+                      <TableHead>الكاشير</TableHead>
+                      <TableHead>الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
-
                   <TableBody>
                     {paginatedInvoices.map((invoice) => {
                       const totalQuantity = invoice.items.reduce(
-                        (sum, item) => sum + (item.quantity - (item.returned_quantity || 0)),
+                        (sum, item) =>
+                          sum + (item.quantity - (item.returned_quantity || 0)),
                         0
                       );
-
                       const canReturn = invoice.items.some(
                         (item) => item.quantity > (item.returned_quantity || 0)
                       );
-
-                      const amountAfterReturn = calculateAmountAfterReturn(invoice);
+                      const amountAfterReturn =
+                        calculateAmountAfterReturn(invoice);
 
                       return (
-                        <TableRow
-                          key={invoice.id}
-                          className="
-                            hover:bg-muted/20
-                            transition-colors border-b last:border-b-0
-                          "
-                        >
-                          <TableCell className="text-center hidden sm:table-cell">
-                            <div className="flex items-center gap-2 justify-center">
+                        <TableRow key={invoice.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
                               {getReturnStatusIcon(invoice)}
                               {getReturnStatusBadge(invoice)}
                             </div>
                           </TableCell>
-
-                          <TableCell className="font-medium text-center text-foreground">
+                          <TableCell className="font-medium">
                             {invoice.invoice_number}
                           </TableCell>
-
-                          <TableCell className="text-center hidden md:table-cell">
-                            <div className="flex flex-col">
-                              <span className="text-sm">
-                                {format(new Date(invoice.created_at), "yyyy/MM/dd", { locale: ar })}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {format(new Date(invoice.created_at), "HH:mm", { locale: ar })}
-                              </span>
-                            </div>
+                          <TableCell>
+                            {format(
+                              new Date(invoice.created_at),
+                              "yyyy/MM/dd HH:mm",
+                              { locale: ar }
+                            )}
                           </TableCell>
-
-                          <TableCell className="text-center hidden lg:table-cell">
-                            <div className="flex flex-col items-center">
-                              <span className="font-medium">
-                                {invoice.customer_name || "غير محدد"}
-                              </span>
-                              {invoice.phone && (
-                                <span className="text-xs text-muted-foreground">
-                                  {invoice.phone}
-                                </span>
-                              )}
-                            </div>
+                          <TableCell>
+                            {invoice.customer_name || "غير محدد"}{" "}
+                            {invoice.phone ? `(${invoice.phone})` : ""}
                           </TableCell>
-
-                          <TableCell className="text-center hidden xl:table-cell">
-                            <span className="text-sm font-medium">
-                              {Number(invoice.total_amount).toFixed(2)} ج.م
-                            </span>
+                          <TableCell>
+                            {Number(invoice.total_amount).toFixed(2)} ج.م
                           </TableCell>
-
-                          <TableCell className="text-center font-semibold">
-                            <span
-                              className={`
-                                text-sm
-                                ${amountAfterReturn < invoice.total_amount
-                                  ? "text-orange-600 dark:text-orange-400"
-                                  : "text-foreground"}
-                              `}
-                            >
-                              {Number(amountAfterReturn).toFixed(2)} ج.م
-                            </span>
+                          <TableCell>
+                            {Number(amountAfterReturn).toFixed(2)} ج.م
                           </TableCell>
-
-                          <TableCell className="text-center hidden lg:table-cell">
-                            <Badge variant="outline" className="text-xs">
-                              {getPaymentMethodName(invoice.payment_method)}
-                            </Badge>
+                          <TableCell>
+                            {getPaymentMethodName(invoice.payment_method)}
                           </TableCell>
-
-                          <TableCell className="text-center hidden md:table-cell">
-                            <span className="font-medium">{totalQuantity}</span>
-                          </TableCell>
-
-                          <TableCell className="text-center hidden xl:table-cell">
-                            <div className="flex flex-col items-center">
-                              <span className="text-sm font-medium">
-                                {invoice.cashier.name}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {invoice.cashier.role}
-                              </span>
-                            </div>
-                          </TableCell>
-
-                          <TableCell className="text-center">
+                          <TableCell>{totalQuantity}</TableCell>
+                          <TableCell>{invoice.cashier.name}</TableCell>
+                          <TableCell>
                             <Button
-                              variant={canReturn ? "default" : "outline"}
+                              variant="outline"
                               size="sm"
                               onClick={() => setupReturn(invoice)}
                               disabled={!canReturn}
-                              className="
-                                flex items-center gap-1 min-w-[80px]
-                                transition-all duration-200 hover:scale-105
-                              "
+                              className="flex items-center gap-1"
                             >
-                              <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
-                              <span className="hidden sm:inline">استرجاع</span>
-                              <span className="sm:hidden">رجوع</span>
+                              <RotateCcw className="h-4 w-4" />
+                              استرجاع
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -679,9 +483,9 @@ const ReturnManager = ({
                   </TableBody>
                 </Table>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </TabsContent>
+        </Tabs>
 
         {/* واجهة الباجينيشن */}
         {filteredInvoices.length > 0 && (
@@ -724,41 +528,21 @@ const ReturnManager = ({
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
-              
-              {/* عرض أرقام الصفحات بشكل متجاوب */}
               <div className="flex items-center gap-1">
-                {(() => {
-                  // تحديد الصفحات المراد عرضها (للتحكم في العرض على الشاشات الصغيرة)
-                  let pagesToShow: number[] = [];
-                  
-                  if (totalPages <= 5) {
-                    // إذا كان العدد الإجمالي للصفحات 5 أو أقل، عرض جميع الصفحات
-                    pagesToShow = Array.from({ length: totalPages }, (_, i) => i + 1);
-                  } else {
-                    // إذا كان العدد الإجمالي للصفحات أكثر من 5، عرض مجموعة محددة
-                    if (currentPage <= 3) {
-                      pagesToShow = [1, 2, 3, 4, 5];
-                    } else if (currentPage >= totalPages - 2) {
-                      pagesToShow = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-                    } else {
-                      pagesToShow = [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
-                    }
-                  }
-                  
-                  return pagesToShow.map((page) => (
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
                     <Button
                       key={page}
                       variant={currentPage === page ? "default" : "outline"}
                       size="sm"
                       onClick={() => goToPage(page)}
-                      className="w-8 h-8 sm:w-10 sm:h-10"
+                      className="w-10 h-10"
                     >
                       {page}
                     </Button>
-                  ));
-                })()}
+                  )
+                )}
               </div>
-              
               <Button
                 variant="outline"
                 size="sm"
@@ -784,14 +568,14 @@ const ReturnManager = ({
         {/* ملخص النتائج */}
         {filteredInvoices.length > 0 && (
           <div className="mt-4 p-3 bg-muted/30 rounded-md text-sm">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <p>
                 عرض <strong>{paginatedInvoices.length}</strong> من أصل{" "}
                 <strong>{filteredInvoices.length}</strong> فاتورة (إجمالي:{" "}
                 <strong>{salesHistory.length}</strong>)
               </p>
 
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   <span>غير مسترجعة: {returnStats.nonReturned}</span>

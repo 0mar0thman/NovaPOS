@@ -6,13 +6,10 @@ import { PurchaseInvoices } from "@/components/purchase-invoices/PurchaseInvoice
 import ReportsSection from "@/components/reports/ReportsSection";
 import SalesInvoices from "@/components/sales_invoices/SalesInvoices";
 import UserManagement from "@/components/user_management/UserManagement";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useMemo } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // افتراض وجود مكون Alert لعرض رسائل الخطأ
 
-interface ContentTabsProps {
-  activeTab: string;
-}
-
-const ContentTabs = ({ activeTab }: ContentTabsProps) => {
+const ContentTabs = () => {
   // مكون مخصص لعرض رسالة Fallback
   const PermissionDeniedAlert = ({ subject }: { subject: string }) => (
     <Alert variant="destructive" className="m-4">
@@ -47,7 +44,6 @@ const ContentTabs = ({ activeTab }: ContentTabsProps) => {
           <SalesInvoices />
         </Can>
       </TabsContent>
-
       <TabsContent value="invoices" className="m-0 transition-all duration-300">
         <Can
           action="read"
@@ -57,7 +53,6 @@ const ContentTabs = ({ activeTab }: ContentTabsProps) => {
           <PurchaseInvoices />
         </Can>
       </TabsContent>
-
       <TabsContent value="products" className="m-0 transition-all duration-300">
         <Can
           action="read"
@@ -67,7 +62,6 @@ const ContentTabs = ({ activeTab }: ContentTabsProps) => {
           <ProductManagement />
         </Can>
       </TabsContent>
-
       <TabsContent value="reports" className="m-0 transition-all duration-300">
         <Can
           action="read"
@@ -77,7 +71,6 @@ const ContentTabs = ({ activeTab }: ContentTabsProps) => {
           <ReportsSection />
         </Can>
       </TabsContent>
-
       <TabsContent value="users" className="m-0 transition-all duration-300">
         <Can
           action="read"

@@ -797,7 +797,7 @@ export const InvoiceFormDialog = ({
       >
         <DialogContent
           className="sm:max-w-7xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border-2 border-blue-200 dark:border-slate-700 rounded-xl p-4 sm:p-6"
-          // dir="rtl"
+          dir="rtl"
         >
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl font-semibold text-blue-900 dark:text-blue-300 flex items-center gap-2">

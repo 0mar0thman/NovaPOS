@@ -276,15 +276,15 @@ const Filters = ({
     }
   };
 
-  const handleUserChange = (value: string) => {
-    if (value === "current" && currentUser) {
-      setSelectedUserId(currentUser.id);
-    } else if (value === "all") {
-      setSelectedUserId("all");
-    } else {
-      setSelectedUserId(value);
-    }
-  };
+ const handleUserChange = (value: string) => {
+  if (value === "current" && currentUser) {
+    setSelectedUserId(currentUser.id);
+  } else if (value === "all") {
+    setSelectedUserId("all");
+  } else {
+    setSelectedUserId(value);
+  }
+};
 
   const handleCustomerTypeChange = (value: string) => {
     if (["all", "عميل فوري", "other"].includes(value)) {
@@ -317,7 +317,7 @@ const Filters = ({
   if (!currentUser) {
     return (
       <Card
-        className="p-4 bg-white/60 dark:bg-slate-800 backdrop-blur-sm border-blue-100 dark:border-slate-700 transition-all duration-300"
+        className="pr-6 pl-6 pb-2 pt-4 mb-0 bg-white/60 dark:bg-slate-800"
         dir="rtl"
       >
         <div className="flex justify-center items-center h-24">
@@ -330,365 +330,355 @@ const Filters = ({
   return (
     <>
       <Card
-        className="p-4 bg-white/60 dark:bg-slate-800 backdrop-blur-sm border-blue-100 dark:border-slate-700 transition-all duration-300"
+        className="pr-6 pl-6 pb-2 pt-4 mb-0 bg-white/60 dark:bg-slate-800 backdrop-blur-sm border-blue-100 dark:border-slate-700 transition-all duration-300"
         dir="rtl"
       >
-        <div className="space-y-4">
-          {/* الصف الأول: الفلاتر الأساسية */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
-                البحث
-              </Label>
-              <Input
-                placeholder="ابحث باسم المنتج او رقم الفاتورة او رقم العميل او اسم العميل..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200 dark:placeholder-gray-400"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
-                الترتيب
-              </Label>
-              <Select value={sort} onValueChange={handleSortChange}>
-                <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
-                  <SelectValue placeholder="اختر الترتيب">
-                    {sort === "desc" ? "الأحدث" : "الأقدم"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
-                  <SelectItem
-                    value="desc"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    الأحدث
-                  </SelectItem>
-                  <SelectItem
-                    value="asc"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    الأقدم
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
-                حالة الدفع
-              </Label>
-              <Select value={paymentStatus} onValueChange={(value) => setPaymentStatus(value as PaymentStatus | "all")}>
-                <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
-                  <SelectValue placeholder="اختر حالة الدفع">
-                    {paymentStatus === "all"
-                      ? "الكل"
-                      : paymentStatus === "paid"
-                      ? "مدفوعة"  
-                      : paymentStatus === "partial"
-                      ? "جزئي"
-                      : "غير مدفوعة"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
-                  <SelectItem
-                    value="all"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    الكل
-                  </SelectItem>
-                  <SelectItem
-                    value="paid"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    مدفوعة
-                  </SelectItem>
-                  <SelectItem
-                    value="partial"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    جزئي
-                  </SelectItem>
-                  <SelectItem
-                    value="unpaid"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    غير مدفوعة
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
-                نوع العميل
-              </Label>
-              <Select value={customerType} onValueChange={handleCustomerTypeChange}>
-                <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
-                  <SelectValue placeholder="اختر نوع العميل">
-                    {customerType === "all"
-                      ? "الكل"
-                      : customerType === "عميل فوري"
-                      ? "عميل فوري"
-                      : "عملاء آخرون"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
-                  <SelectItem
-                    value="all"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    الكل
-                  </SelectItem>
-                  <SelectItem
-                    value="عميل فوري"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    عميل فوري
-                  </SelectItem>
-                  <SelectItem
-                    value="other"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    عملاء آخرون
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
-                الفترة الزمنية
-              </Label>
-              <Select value={dateFilter} onValueChange={handleDateFilterChange}>
-                <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
-                  <SelectValue placeholder="اختر الفترة">
-                    {dateFilter === "all"
-                      ? "الكل"
-                      : dateFilter === "daily"
-                      ? "يومي"
-                      : dateFilter === "weekly"
-                      ? "أسبوعي"
-                      : "شهري"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
-                  <SelectItem
-                    value="all"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    الكل
-                  </SelectItem>
-                  <SelectItem
-                    value="daily"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    يومي
-                  </SelectItem>
-                  <SelectItem
-                    value="weekly"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    أسبوعي
-                  </SelectItem>
-                  <SelectItem
-                    value="monthly"
-                    className="dark:hover:bg-slate-600 dark:text-gray-200"
-                  >
-                    شهري
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-[200px]">
+            <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
+              البحث
+            </Label>
+            <Input
+              placeholder="ابحث باسم المنتج او رقم الفاتورة او رقم العميل او اسم العميل..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="mt-1 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200"
+            />
           </div>
 
-          {/* الصف الثاني: الفلاتر الزمنية المحددة */}
+          <div>
+            <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
+              الترتيب
+            </Label>
+            <Select value={sort} onValueChange={handleSortChange}>
+              <SelectTrigger className="mt-1 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
+                <SelectValue placeholder="اختر الترتيب">
+                  {sort === "desc" ? "الأحدث" : "الأقدم"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
+                <SelectItem
+                  value="desc"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  الأحدث
+                </SelectItem>
+                <SelectItem
+                  value="asc"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  الأقدم
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
+              حالة الدفع
+            </Label>
+            <Select value={paymentStatus} onValueChange={(value) => setPaymentStatus(value as PaymentStatus | "all")}>
+              <SelectTrigger className="mt-1 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
+                <SelectValue placeholder="اختر حالة الدفع">
+                  {paymentStatus === "all"
+                    ? "الكل"
+                    : paymentStatus === "paid"
+                    ? "مدفوعة"  
+                    : paymentStatus === "partial"
+                    ? "جزئي"
+                    : "غير مدفوعة"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
+                <SelectItem
+                  value="all"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  الكل
+                </SelectItem>
+                <SelectItem
+                  value="paid"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  مدفوعة
+                </SelectItem>
+                <SelectItem
+                  value="partial"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  جزئي
+                </SelectItem>
+                <SelectItem
+                  value="unpaid"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  غير مدفوعة
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
+              نوع العميل
+            </Label>
+            <Select value={customerType} onValueChange={handleCustomerTypeChange}>
+              <SelectTrigger className="mt-1 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
+                <SelectValue placeholder="اختر نوع العميل">
+                  {customerType === "all"
+                    ? "الكل"
+                    : customerType === "عميل فوري"
+                    ? "عميل فوري"
+                    : "عملاء آخرون"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
+                <SelectItem
+                  value="all"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  الكل
+                </SelectItem>
+                <SelectItem
+                  value="عميل فوري"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  عميل فوري
+                </SelectItem>
+                <SelectItem
+                  value="other"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  عملاء آخرون
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
+              الفترة الزمنية
+            </Label>
+            <Select value={dateFilter} onValueChange={handleDateFilterChange}>
+              <SelectTrigger className="mt-1 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
+                <SelectValue placeholder="اختر الفترة">
+                  {dateFilter === "all"
+                    ? "الكل"
+                    : dateFilter === "daily"
+                    ? "يومي"
+                    : dateFilter === "weekly"
+                    ? "أسبوعي"
+                    : "شهري"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
+                <SelectItem
+                  value="all"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  الكل
+                </SelectItem>
+                <SelectItem
+                  value="daily"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  يومي
+                </SelectItem>
+                <SelectItem
+                  value="weekly"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  أسبوعي
+                </SelectItem>
+                <SelectItem
+                  value="monthly"
+                  className="dark:hover:bg-slate-600 dark:text-gray-200"
+                >
+                  شهري
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {dateFilter !== "all" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
-                  اختر الفترة الزمنية
-                </Label>
-                {dateFilter === "daily" && (
-                  <Select value={specificDate} onValueChange={setSpecificDate}>
-                    <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
-                      <SelectValue placeholder="اختر يومًا" />
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
-                      {getLast7Days().map((day) => (
-                        <SelectItem
-                          key={day.value}
-                          value={day.value}
-                          className="dark:hover:bg-slate-600 dark:text-gray-200"
-                        >
-                          {day.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                {dateFilter === "weekly" && (
-                  <Select value={specificWeek} onValueChange={setSpecificWeek}>
-                    <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
-                      <SelectValue placeholder="اختر أسبوعًا" />
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
-                      {getLast4Weeks().map((week) => (
-                        <SelectItem
-                          key={week.value}
-                          value={week.value}
-                          className="dark:hover:bg-slate-600 dark:text-gray-200"
-                        >
-                          {week.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                {dateFilter === "monthly" && (
-                  <Select value={specificMonth} onValueChange={setSpecificMonth}>
-                    <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
-                      <SelectValue placeholder="اختر شهرًا" />
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
-                      {getLast12Months().map((month) => (
-                        <SelectItem
-                          key={month.value}
-                          value={month.value}
-                          className="dark:hover:bg-slate-600 dark:text-gray-200"
-                        >
-                          {month.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
+            <div>
+              <Label className="text-sm font-semibold text-gray-600 dark:text-gray-200">
+                اختر الفترة الزمنية
+              </Label>
+              {dateFilter === "daily" && (
+                <Select value={specificDate} onValueChange={setSpecificDate}>
+                  <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
+                    <SelectValue placeholder="اختر يومًا" />
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
+                    {getLast7Days().map((day) => (
+                      <SelectItem
+                        key={day.value}
+                        value={day.value}
+                        className="dark:hover:bg-slate-600 dark:text-gray-200"
+                      >
+                        {day.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {dateFilter === "weekly" && (
+                <Select value={specificWeek} onValueChange={setSpecificWeek}>
+                  <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
+                    <SelectValue placeholder="اختر أسبوعًا" />
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
+                    {getLast4Weeks().map((week) => (
+                      <SelectItem
+                        key={week.value}
+                        value={week.value}
+                        className="dark:hover:bg-slate-600 dark:text-gray-200"
+                      >
+                        {week.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {dateFilter === "monthly" && (
+                <Select value={specificMonth} onValueChange={setSpecificMonth}>
+                  <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
+                    <SelectValue placeholder="اختر شهرًا" />
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
+                    {getLast12Months().map((month) => (
+                      <SelectItem
+                        key={month.value}
+                        value={month.value}
+                        className="dark:hover:bg-slate-600 dark:text-gray-200"
+                      >
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           )}
 
-          {/* الصف الثالث: المستخدم والتصدير */}
-          <div className="bg-gray-100 dark:bg-slate-700 rounded-lg p-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
-              <Can action="read" subject="User">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                    المستخدم
-                  </Label>
-                  <Select value={selectedUserId || "current"} onValueChange={handleUserChange}>
-                    <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
-                      <SelectValue placeholder="اختر المستخدم">
-                        {selectedUserId === "all"
-                          ? "جميع المستخدمين"
-                          : selectedUserId
-                          ? users.find((user) => user.id === selectedUserId)?.name || "غير معروف"
-                          : currentUser?.name || "غير معروف"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
-                      <SelectItem
-                        value="current"
-                        className="dark:hover:bg-slate-600 dark:text-gray-200"
-                      >
-                        {currentUser?.name || "غير معروف"} (أنا)
-                      </SelectItem>
-                      {canViewAllInvoices && (
-                        <SelectItem
-                          value="all"
-                          className="dark:hover:bg-slate-600 dark:text-gray-200"
-                        >
-                          جميع المستخدمين
-                        </SelectItem>
-                      )}
-                      {users.length > 0 ? (
-                        users.map((user) => (
-                          <SelectItem
-                            key={user.id}
-                            value={user.id}
-                            className="dark:hover:bg-slate-600 dark:text-gray-200"
-                          >
-                            {user.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem
-                          value="none"
-                          disabled
-                          className="dark:hover:bg-slate-600 dark:text-gray-200"
-                        >
-                          لا يوجد مستخدمين متاحين
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </Can>
-
-              <div className="space-y-2">
+          <div className="flex items-end gap-3 p-2 bg-gray-100 dark:bg-slate-700 rounded-lg">
+            <Can action="read" subject="User">
+              <div>
                 <Label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                  تصدير المبيعات
+                  المستخدم
                 </Label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Select value={exportOption} onValueChange={handleExportOptionChange}>
-                    <SelectTrigger className="dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200">
-                      <SelectValue placeholder="اختر فترة التصدير">
-                        {exportOption === "today"
-                          ? "اليوم حتى الآن"
-                          : exportOption === "yesterday"
-                          ? "اليوم السابق"
-                          : exportOption === "weekly"
-                          ? "الأسبوعي"
-                          : "الشهري"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-slate-700 dark:border-slate-600">
+                <Select value={selectedUserId || "current"} onValueChange={handleUserChange}>
+                  <SelectTrigger className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <SelectValue placeholder="اختر المستخدم">
+                      {selectedUserId === "all"
+                        ? "جميع المستخدمين"
+                        : selectedUserId
+                        ? users.find((user) => user.id === selectedUserId)?.name || "غير معروف"
+                        : currentUser?.name || "غير معروف"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                    <SelectItem
+                      value="current"
+                      className="dark:hover:bg-gray-700 dark:focus:bg-gray-700"
+                    >
+                      {currentUser?.name || "غير معروف"} (أنا)
+                    </SelectItem>
+                    {canViewAllInvoices && (
                       <SelectItem
-                        value="today"
-                        className="dark:hover:bg-slate-600 dark:text-gray-200"
+                        value="all"
+                        className="dark:hover:bg-gray-700 dark:focus:bg-gray-700"
                       >
-                        اليوم حتى الآن
+                        جميع المستخدمين
                       </SelectItem>
+                    )}
+                    {users.length > 0 ? (
+                      users.map((user) => (
+                        <SelectItem
+                          key={user.id}
+                          value={user.id}
+                          className="dark:hover:bg-slate-600 dark:text-gray-200"
+                        >
+                          {user.name}
+                        </SelectItem>
+                      ))
+                    ) : (
                       <SelectItem
-                        value="yesterday"
-                        className="dark:hover:bg-slate-600 dark:text-gray-200"
+                        value="none"
+                        disabled
+                        className="dark:hover:bg-gray-700 dark:focus:bg-gray-700"
                       >
-                        اليوم السابق
+                        لا يوجد مستخدمين متاحين
                       </SelectItem>
-                      <SelectItem
-                        value="weekly"
-                        className="dark:hover:bg-slate-600 dark:text-gray-200"
-                      >
-                        الأسبوعي
-                      </SelectItem>
-                      <SelectItem
-                        value="monthly"
-                        className="dark:hover:bg-slate-600 dark:text-gray-200"
-                      >
-                        الشهري
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    onClick={handleExport}
-                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 dark:text-gray-200 whitespace-nowrap"
-                  >
-                    <Download className="w-4 h-4 ml-2" />
-                    تصدير CSV
-                  </Button>
-                </div>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
+            </Can>
 
-              {/* <div className="flex justify-end lg:justify-start">
+            <div>
+              <Label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                تصدير المبيعات
+              </Label>
+              <div className="flex items-center gap-2 mt-1">
+                <Select value={exportOption} onValueChange={handleExportOptionChange}>
+                  <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <SelectValue placeholder="اختر فترة التصدير">
+                      {exportOption === "today"
+                        ? "اليوم حتى الآن"
+                        : exportOption === "yesterday"
+                        ? "اليوم السابق"
+                        : exportOption === "weekly"
+                        ? "الأسبوعي"
+                        : "الشهري"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                    <SelectItem
+                      value="today"
+                      className="dark:hover:bg-gray-700 dark:focus:bg-gray-700"
+                    >
+                      اليوم حتى الآن
+                    </SelectItem>
+                    <SelectItem
+                      value="yesterday"
+                      className="dark:hover:bg-gray-700 dark:focus:bg-gray-700"
+                    >
+                      اليوم السابق
+                    </SelectItem>
+                    <SelectItem
+                      value="weekly"
+                      className="dark:hover:bg-gray-700 dark:focus:bg-gray-700"
+                    >
+                      الأسبوعي
+                    </SelectItem>
+                    <SelectItem
+                      value="monthly"
+                      className="dark:hover:bg-gray-700 dark:focus:bg-gray-700"
+                    >
+                      الشهري
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button
-                  onClick={handleResetFilters}
-                  variant="outline"
-                  className="border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 w-full sm:w-auto"
+                  onClick={handleExport}
+                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 dark:text-gray-200"
                 >
-                  <RefreshCw className="w-4 h-4 ml-2" />
-                  إعادة تعيين
+                  <Download className="w-4 h-4 ml-2" />
+                  تصدير CSV
                 </Button>
-              </div> */}
+              </div>
+            </div>
+
+            <div>
+              <Button
+                onClick={handleResetFilters}
+                variant="outline"
+                className="border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 w-10"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>

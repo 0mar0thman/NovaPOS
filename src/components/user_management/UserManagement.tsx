@@ -354,28 +354,28 @@ const UserManagement = () => {
 
   return (
     <div
-      className="space-y-6 mb-6 dark:bg-slate-900 transition-all duration-300 min-h-screen"
+      className="space-y-6 p-6 dark:bg-slate-900 transition-all duration-300"
       dir="rtl"
     >
       <Can action="read" subject="User">
-        <Card className="bg-white/90 dark:bg-slate-800 backdrop-blur-sm border-blue-100 dark:border-slate-700 shadow-xl rounded-xl transition-all duration-200 w-full">
-          <CardHeader className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <CardTitle className="text-blue-800 dark:text-blue-300 text-xl sm:text-2xl font-bold">
+        <Card className="bg-white/90 dark:bg-slate-800 backdrop-blur-sm border-blue-100 dark:border-slate-700 shadow-xl rounded-xl transition-all duration-200">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-blue-800 dark:text-blue-300 text-2xl font-bold">
                 إدارة المستخدمين
               </CardTitle>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-2">
                 {/* عرض معلومات المستخدم الحالي */}
                 {currentLoggedUser && (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-sm w-full sm:w-auto justify-center sm:justify-start">
-                    <span className="text-blue-700 dark:text-blue-300 whitespace-nowrap">
+                  <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                    <span className="text-sm text-blue-700 dark:text-blue-300">
                       المستخدم الحالي:
                     </span>
-                    <span className="font-medium text-blue-800 dark:text-blue-200 truncate max-w-[120px] sm:max-w-none">
+                    <span className="font-medium text-blue-800 dark:text-blue-200">
                       {currentLoggedUser.name}
                     </span>
                     {currentLoggedUser.roles?.includes("admin") && (
-                      <ShieldAlert className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                      <ShieldAlert className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                     )}
                   </div>
                 )}
@@ -389,19 +389,19 @@ const UserManagement = () => {
                     <DialogTrigger asChild>
                       <Button
                         variant="outline"
-                        className="border border-orange-600 text-orange-600 hover:bg-orange-50 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-gray-800 w-full sm:w-auto justify-center"
+                        className="border border-orange-600 text-orange-600 hover:bg-orange-50 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-gray-800"
                         onClick={fetchTrashedUsers}
                       >
                         <Archive className="w-4 h-4 ml-2" />
-                        <span className="whitespace-nowrap">المستخدمين المحذوفين</span>
+                        المستخدمين المحذوفين
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto w-[95vw] sm:w-full">
+                    <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle className="text-orange-600 dark:text-orange-400 text-lg sm:text-xl">
+                        <DialogTitle className="text-orange-600 dark:text-orange-400">
                           المستخدمين المحذوفين
                         </DialogTitle>
-                        <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                        <DialogDescription className="text-gray-600 dark:text-gray-400">
                           قائمة المستخدمين الذين تم حذفهم
                         </DialogDescription>
                       </DialogHeader>
@@ -411,64 +411,59 @@ const UserManagement = () => {
                           <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
                         </div>
                       ) : trashedUsers.length > 0 ? (
-                        <div className="overflow-x-auto">
-                          <Table className="min-w-[600px]">
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead className="whitespace-nowrap">الاسم</TableHead>
-                                <TableHead className="whitespace-nowrap">البريد الإلكتروني</TableHead>
-                                <TableHead className="whitespace-nowrap">تاريخ الحذف</TableHead>
-                                <TableHead className="text-center whitespace-nowrap">
-                                  الإجراءات
-                                </TableHead>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>الاسم</TableHead>
+                              <TableHead>البريد الإلكتروني</TableHead>
+                              <TableHead>تاريخ الحذف</TableHead>
+                              <TableHead className="text-center">
+                                الإجراءات
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {trashedUsers.map((user) => (
+                              <TableRow key={user.id}>
+                                <TableCell>{user.name}</TableCell>
+                                <TableCell>{user.email}</TableCell>
+                                <TableCell>
+                                  {new Date(user.deleted_at).toLocaleDateString(
+                                    "en-SA"
+                                  )}
+                                </TableCell>
+                                <TableCell className="flex gap-2 justify-center">
+                                  <Can action="manage" subject="User">
+                                    <Button
+                                      variant="outline"
+                                      onClick={() =>
+                                        setRestoreDialog({ open: true, user })
+                                      }
+                                      className="text-green-600 border-green-300 hover:bg-green-50"
+                                    >
+                                      <RotateCcw className="w-4 h-4 ml-1" />
+                                      استعادة
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      onClick={() =>
+                                        setForceDeleteDialog({
+                                          open: true,
+                                          user,
+                                        })
+                                      }
+                                    >
+                                      <Trash2 className="w-4 h-4 ml-1" />
+                                      حذف نهائي
+                                    </Button>
+                                  </Can>
+                                </TableCell>
                               </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {trashedUsers.map((user) => (
-                                <TableRow key={user.id}>
-                                  <TableCell className="whitespace-nowrap">{user.name}</TableCell>
-                                  <TableCell className="whitespace-nowrap">{user.email}</TableCell>
-                                  <TableCell className="whitespace-nowrap">
-                                    {new Date(user.deleted_at).toLocaleDateString(
-                                      "en-SA"
-                                    )}
-                                  </TableCell>
-                                  <TableCell className="flex gap-2 justify-center flex-wrap">
-                                    <Can action="manage" subject="User">
-                                      <Button
-                                        variant="outline"
-                                        onClick={() =>
-                                          setRestoreDialog({ open: true, user })
-                                        }
-                                        className="text-green-600 border-green-300 hover:bg-green-50 text-xs sm:text-sm"
-                                        size="sm"
-                                      >
-                                        <RotateCcw className="w-3 h-3 ml-1" />
-                                        استعادة
-                                      </Button>
-                                      <Button
-                                        variant="destructive"
-                                        onClick={() =>
-                                          setForceDeleteDialog({
-                                            open: true,
-                                            user,
-                                          })
-                                        }
-                                        size="sm"
-                                        className="text-xs sm:text-sm"
-                                      >
-                                        <Trash2 className="w-3 h-3 ml-1" />
-                                        حذف نهائي
-                                      </Button>
-                                    </Can>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
+                            ))}
+                          </TableBody>
+                        </Table>
                       ) : (
-                        <div className="text-center py-8 text-gray-500 text-sm sm:text-base">
+                        <div className="text-center py-8 text-gray-500">
                           لا توجد حسابات محذوفة
                         </div>
                       )}
@@ -484,18 +479,18 @@ const UserManagement = () => {
                     <DialogTrigger asChild>
                       <Button
                         variant="outline"
-                        className="border border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-gray-800 w-full sm:w-auto justify-center"
+                        className="border border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-gray-800"
                       >
                         <UserPlus className="w-4 h-4 ml-2" />
-                        <span className="whitespace-nowrap">إنشاء مستخدم جديد</span>
+                        إنشاء مستخدم جديد
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md bg-white dark:bg-slate-800 border-blue-200 dark:border-blue-700 w-[95vw] sm:w-full">
+                    <DialogContent className="sm:max-w-md bg-white dark:bg-slate-800 border-blue-200 dark:border-blue-700">
                       <DialogHeader>
-                        <DialogTitle className="text-blue-600 dark:text-blue-400 text-lg sm:text-xl">
+                        <DialogTitle className="text-blue-600 dark:text-blue-400">
                           {currentUser ? "تعديل المستخدم" : "إنشاء مستخدم جديد"}
                         </DialogTitle>
-                        <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                        <DialogDescription className="text-gray-600 dark:text-gray-400">
                           أدخل بيانات المستخدم.
                         </DialogDescription>
                       </DialogHeader>
@@ -503,7 +498,7 @@ const UserManagement = () => {
                         <div className="space-y-2">
                           <Label
                             htmlFor="name"
-                            className="text-gray-700 dark:text-gray-200 text-sm sm:text-base"
+                            className="text-gray-700 dark:text-gray-200"
                           >
                             الاسم
                           </Label>
@@ -513,10 +508,10 @@ const UserManagement = () => {
                             value={form.name}
                             onChange={handleChange}
                             placeholder="أدخل الاسم الكامل"
-                            className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                            className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500"
                           />
                           {errors.name && (
-                            <p className="text-red-500 text-xs sm:text-sm">
+                            <p className="text-red-500 text-sm">
                               {errors.name[0]}
                             </p>
                           )}
@@ -524,7 +519,7 @@ const UserManagement = () => {
                         <div className="space-y-2">
                           <Label
                             htmlFor="email"
-                            className="text-gray-700 dark:text-gray-200 text-sm sm:text-base"
+                            className="text-gray-700 dark:text-gray-200"
                           >
                             البريد الإلكتروني
                           </Label>
@@ -535,10 +530,10 @@ const UserManagement = () => {
                             value={form.email}
                             onChange={handleChange}
                             placeholder="أدخل البريد الإلكتروني"
-                            className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                            className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500"
                           />
                           {errors.email && (
-                            <p className="text-red-500 text-xs sm:text-sm">
+                            <p className="text-red-500 text-sm">
                               {errors.email[0]}
                             </p>
                           )}
@@ -546,7 +541,7 @@ const UserManagement = () => {
                         <div className="space-y-2">
                           <Label
                             htmlFor="password"
-                            className="text-gray-700 dark:text-gray-200 text-sm sm:text-base"
+                            className="text-gray-700 dark:text-gray-200"
                           >
                             كلمة المرور
                           </Label>
@@ -561,27 +556,27 @@ const UserManagement = () => {
                                 ? "اتركه فارغاً للحفاظ على كلمة المرور"
                                 : "كلمة المرور"
                             }
-                            className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                            className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500"
                           />
                           {errors.password && (
-                            <p className="text-red-500 text-xs sm:text-sm">
+                            <p className="text-red-500 text-sm">
                               {errors.password[0]}
                             </p>
                           )}
                         </div>
-                        <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
+                        <div className="flex justify-end gap-2 pt-2">
                           <Button
                             variant="outline"
                             type="button"
                             onClick={() => setIsUserDialogOpen(false)}
-                            className="flex items-center gap-2 border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors duration-200 text-sm sm:text-base order-2 sm:order-1"
+                            className="flex items-center gap-2 border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors duration-200"
                           >
                             <X className="w-4 h-4" />
                             إلغاء
                           </Button>
                           <Button
                             type="submit"
-                            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white transition-colors duration-200 text-sm sm:text-base order-1 sm:order-2"
+                            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white transition-colors duration-200"
                           >
                             {currentUser ? (
                               <>
@@ -604,159 +599,155 @@ const UserManagement = () => {
             </div>
           </CardHeader>
 
-          <CardContent className="p-0 sm:p-6">
+          <CardContent>
             {isLoading ? (
-              <div className="flex justify-center items-center py-8 flex-col sm:flex-row">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-500 dark:text-blue-400 mb-2 sm:mb-0 sm:mr-2" />
-                <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-500 dark:text-blue-400" />
+                <span className="mr-2 text-gray-600 dark:text-gray-400">
                   جاري تحميل البيانات...
                 </span>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table className="min-w-[700px]">
-                  <TableHeader className="bg-blue-100 dark:bg-slate-700">
-                    <TableRow>
-                      <TableHead className="text-right font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                        الاسم
+              <Table>
+                <TableHeader className="bg-blue-100 dark:bg-slate-700">
+                  <TableRow>
+                    <TableHead className="text-right font-bold text-gray-800 dark:text-gray-200">
+                      الاسم
+                    </TableHead>
+                    <TableHead className="text-right font-bold text-gray-800 dark:text-gray-200">
+                      البريد الإلكتروني
+                    </TableHead>
+                    <Can action="manage" subject="Role">
+                      <TableHead className="text-right font-bold text-gray-800 dark:text-gray-200">
+                        الأدوار
                       </TableHead>
-                      <TableHead className="text-right font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                        البريد الإلكتروني
+                    </Can>
+                    <Can
+                      action="update"
+                      subject="User"
+                      fallback={<TableHead />}
+                    >
+                      <TableHead className="text-center font-bold text-gray-800 dark:text-gray-200">
+                        إجراءات
                       </TableHead>
-                      <Can action="manage" subject="Role">
-                        <TableHead className="text-right font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                          الأدوار
-                        </TableHead>
-                      </Can>
-                      <Can
-                        action="update"
-                        subject="User"
-                        fallback={<TableHead />}
+                    </Can>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.length > 0 ? (
+                    users.map((user) => (
+                      <TableRow
+                        key={user.id}
+                        className="hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors duration-200"
                       >
-                        <TableHead className="text-center font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                          إجراءات
-                        </TableHead>
-                      </Can>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.length > 0 ? (
-                      users.map((user) => (
-                        <TableRow
-                          key={user.id}
-                          className="hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors duration-200"
-                        >
-                          <TableCell className="font-medium dark:text-gray-200">
-                            <div className="flex items-center gap-2">
-                              <span className="truncate max-w-[100px] sm:max-w-none">{user.name}</span>
-                              {isCurrentUser(user) && (
-                                <span className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 rounded-full flex-shrink-0">
-                                  <AlertCircle className="w-3 h-3" />
-                                  أنت
+                        <TableCell className="font-medium dark:text-gray-200">
+                          <div className="flex items-center gap-2">
+                            {user.name}
+                            {isCurrentUser(user) && (
+                              <span className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 rounded-full">
+                                <AlertCircle className="w-3 h-3" />
+                                أنت
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="dark:text-gray-200">
+                          {user.email}
+                        </TableCell>
+                        <Can action="manage" subject="Role">
+                          <TableCell className="dark:text-gray-200">
+                            <div className="flex flex-wrap gap-1">
+                              {user.roles && user.roles.length > 0 ? (
+                                user.roles.map((role, index) => (
+                                  <span
+                                    key={`${role}-${index}`}
+                                    className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                      role === "admin"
+                                        ? "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300"
+                                        : "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
+                                    }`}
+                                  >
+                                    {role === "admin" && (
+                                      <ShieldAlert className="w-3 h-3 inline mr-1" />
+                                    )}
+                                    {role}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-gray-500 dark:text-gray-400 text-sm">
+                                  بدون أدوار
                                 </span>
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="dark:text-gray-200 truncate max-w-[120px] sm:max-w-none">
-                            {user.email}
-                          </TableCell>
-                          <Can action="manage" subject="Role">
-                            <TableCell className="dark:text-gray-200">
-                              <div className="flex flex-wrap gap-1">
-                                {user.roles && user.roles.length > 0 ? (
-                                  user.roles.map((role, index) => (
-                                    <span
-                                      key={`${role}-${index}`}
-                                      className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
-                                        role === "admin"
-                                          ? "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300"
-                                          : "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
-                                      }`}
-                                    >
-                                      {role === "admin" && (
-                                        <ShieldAlert className="w-3 h-3 inline mr-1" />
-                                      )}
-                                      {role}
-                                    </span>
-                                  ))
-                                ) : (
-                                  <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
-                                    بدون أدوار
-                                  </span>
-                                )}
-                              </div>
-                            </TableCell>
-                          </Can>
-                          <Can
-                            action="update"
-                            subject="User"
-                            fallback={<TableCell />}
-                          >
-                            <TableCell className="flex gap-2 justify-center flex-wrap">
-                              <UserRoleManager
-                                user={user}
-                                roles={roles}
-                                onUserUpdated={(updatedUser) => {
-                                  setUsers(
-                                    users.map((u) =>
-                                      u.id === updatedUser.id ? updatedUser : u
-                                    )
-                                  );
-                                }}
-                                disabled={isCurrentUser(user)}
-                                currentLoggedUser={currentLoggedUser}
-                              />
-                              <Can action="update" subject="User">
-                                <Button
-                                  variant="outline"
-                                  onClick={() => handleEditUser(user)}
-                                  disabled={
-                                    (user.roles?.includes("admin") &&
-                                      !ability.can("manage", "All")) ||
-                                    isCurrentUser(user)
-                                  }
-                                  className="flex items-center gap-2 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
-                                  size="sm"
-                                >
-                                  <Pencil className="w-3 h-3 sm:w-4 sm:h-4" />
-                                  تعديل
-                                </Button>
-                              </Can>
-                              <Can action="delete" subject="User">
-                                <Button
-                                  variant="destructive"
-                                  onClick={() =>
-                                    setDeleteDialog({ open: true, user })
-                                  }
-                                  disabled={
-                                    isCurrentUser(user) ||
-                                    (user.roles?.includes("admin") &&
-                                      !ability.can("manage", "All"))
-                                  }
-                                  className="flex items-center gap-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
-                                  size="sm"
-                                >
-                                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                                  {isCurrentUser(user) ? "لا يمكن الحذف" : "حذف"}
-                                </Button>
-                              </Can>
-                            </TableCell>
-                          </Can>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell
-                          colSpan={4}
-                          className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm sm:text-base"
+                        </Can>
+                        <Can
+                          action="update"
+                          subject="User"
+                          fallback={<TableCell />}
                         >
-                          لا يوجد مستخدمون متاحون
-                        </TableCell>
+                          <TableCell className="flex gap-2 justify-center">
+                            <UserRoleManager
+                              user={user}
+                              roles={roles}
+                              onUserUpdated={(updatedUser) => {
+                                setUsers(
+                                  users.map((u) =>
+                                    u.id === updatedUser.id ? updatedUser : u
+                                  )
+                                );
+                              }}
+                              disabled={isCurrentUser(user)}
+                              currentLoggedUser={currentLoggedUser}
+                            />
+                            <Can action="update" subject="User">
+                              <Button
+                                variant="outline"
+                                onClick={() => handleEditUser(user)}
+                                disabled={
+                                  (user.roles?.includes("admin") &&
+                                    !ability.can("manage", "All")) ||
+                                  isCurrentUser(user)
+                                }
+                                className="flex items-center gap-2 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <Pencil className="w-4 h-4" />
+                                تعديل
+                              </Button>
+                            </Can>
+                            <Can action="delete" subject="User">
+                              <Button
+                                variant="destructive"
+                                onClick={() =>
+                                  setDeleteDialog({ open: true, user })
+                                }
+                                disabled={
+                                  isCurrentUser(user) ||
+                                  (user.roles?.includes("admin") &&
+                                    !ability.can("manage", "All"))
+                                }
+                                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                {isCurrentUser(user) ? "لا يمكن الحذف" : "حذف"}
+                              </Button>
+                            </Can>
+                          </TableCell>
+                        </Can>
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        className="text-center py-8 text-gray-500 dark:text-gray-400"
+                      >
+                        لا يوجد مستخدمون متاحون
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>

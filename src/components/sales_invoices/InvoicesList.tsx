@@ -57,7 +57,7 @@ const InvoicesList = ({
 
   return (
     <>
-      <Card className="space-y-2 bg-white/60 dark:bg-slate-800/80 backdrop-blur-sm border-blue-100 dark:border-slate-700 p-2 rounded-md mb-6">
+      <Card className="space-y-2 bg-white/60 dark:bg-slate-800/80 backdrop-blur-sm border-blue-100 dark:border-slate-700 p-2 rounded-md">
         {(!currentUser || filteredInvoices.length === 0) ? (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <Receipt className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />

@@ -935,7 +935,7 @@ return (
         >
           <div className="lg:col-span-2">
             <DailySalesFooter
-              // currentUser={currentUser}
+              currentUser={currentUser}
               saleTrigger={saleTrigger}
               returnTrigger={returnTrigger}
             />

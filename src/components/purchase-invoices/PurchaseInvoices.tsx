@@ -297,64 +297,54 @@ export const PurchaseInvoices = () => {
   return (
     <>
       <div className="space-y-6">
-       <Card className="bg-white/60 backdrop-blur-sm border-blue-100 dark:bg-gray-800/60 dark:border-gray-700 transition-all duration-300">
-  <CardHeader>
-    <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-      {/* العنوان والمعلومات */}
-      <div className="flex-1 min-w-0">
-        <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300 text-xl lg:text-2xl">
-          <FileText className="w-5 h-5 lg:w-6 lg:h-6 flex-shrink-0" />
-          <span className="truncate">فواتير المشتريات</span>
-        </CardTitle>
-        
-        <div className="mt-2 space-y-2">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            إجمالي الفواتير: {filteredInvoices.length} فاتورة (من أصل{" "}
-            {allInvoices.length})
-          </p>
-          
-          {currentUser && (
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-              <Users className="w-4 h-4 mr-1 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-              <span className="truncate">
-                المشتري الحالي:{" "}
-                <strong className="dark:text-gray-200">
-                  {currentUser.name}
-                </strong>
-              </span>
+        <Card className="bg-white/60 backdrop-blur-sm border-blue-100 dark:bg-gray-800/60 dark:border-gray-700 transition-all duration-300">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                  <FileText className="w-6 h-6" />
+                  فواتير المشتريات
+                </CardTitle>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  إجمالي الفواتير: {filteredInvoices.length} فاتورة (من أصل{" "}
+                  {allInvoices.length})
+                </p>
+                {currentUser && (
+                  <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    <Users className="w-4 h-4 mr-1 text-gray-500 dark:text-gray-400" />
+                    <span>
+                      المشتري الحالي:{" "}
+                      <strong className="dark:text-gray-200">
+                        {currentUser.name}
+                      </strong>
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Can action="create" subject="PurchaseInvoice">
+                  <Button
+                    onClick={() => setIsFormOpen(true)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-600 dark:hover:bg-blue-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    فاتورة جديدة
+                  </Button>
+                </Can>
+                <Can action="read" subject="Supplier">
+                  <Button
+                    onClick={() => setIsSupplierManagementOpen(true)}
+                    variant="outline"
+                    className="border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    إدارة الموردين
+                  </Button>
+                </Can>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* الأزرار */}
-      <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-        <Can action="create" subject="PurchaseInvoice">
-          <Button
-            onClick={() => setIsFormOpen(true)}
-            className="bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-600 dark:hover:bg-blue-700 w-full sm:w-auto justify-center lg:justify-start"
-            size="sm"
-          >
-            <Plus className="w-4 h-4 ml-2 flex-shrink-0" />
-            <span className="truncate">فاتورة جديدة</span>
-          </Button>
-        </Can>
-        
-        <Can action="read" subject="Supplier">
-          <Button
-            onClick={() => setIsSupplierManagementOpen(true)}
-            variant="outline"
-            className="border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 w-full sm:w-auto justify-center lg:justify-start"
-            size="sm"
-          >
-            <Users className="w-4 h-4 ml-2 flex-shrink-0" />
-            <span className="truncate">إدارة الموردين</span>
-          </Button>
-        </Can>
-      </div>
-    </div>
-  </CardHeader>
-</Card>
+          </CardHeader>
+        </Card>
 
         <Can action="read" subject="PurchaseInvoice">
           <InvoiceFilters

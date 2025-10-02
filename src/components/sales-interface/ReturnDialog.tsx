@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { useState, useMemo, useCallback } from "react";
+import { useState } from "react";
 
 interface SaleInvoice {
   id: string;
@@ -47,7 +47,7 @@ interface ReturnDialogProps {
   selectedInvoice: SaleInvoice | null;
   returnItems: { [key: string]: number };
   setReturnItems: (items: { [key: string]: number }) => void;
-  handleReturnItems: () => Promise<void>;
+  handleReturnItems: () => void;
   isLoading: boolean;
   getPaymentMethodName: (method: string) => string;
   currentUser?: {
@@ -73,21 +73,6 @@ interface InvoiceItem {
   };
 }
 
-interface ReturnResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    return_id: string;
-    new_invoice_total: number;
-    returned_items: Array<{
-      item_id: string;
-      returned_quantity: number;
-      refund_amount: number;
-    }>;
-  };
-  error?: string;
-}
-
 const ReturnDialog = ({
   open,
   onOpenChange,
@@ -100,84 +85,25 @@ const ReturnDialog = ({
   currentUser
 }: ReturnDialogProps) => {
   const [showPrintOption, setShowPrintOption] = useState(false);
-  const [returnResponse, setReturnResponse] = useState<ReturnResponse | null>(null);
 
-  // استخدام useMemo لحساب الإجمالي بعد الاسترجاع
-  const totalAfterReturn = useMemo(() => {
-    if (!selectedInvoice) return 0;
-    
-    let total = selectedInvoice.total_amount;
-    
-    selectedInvoice.items.forEach(item => {
-      const returnQty = returnItems[item.id] || 0;
-      total -= returnQty * item.unit_price;
+  const onConfirmReturn = (shouldPrint: boolean) => {
+    console.log("بيانات الاسترجاع المُرسلة:", {
+      invoice_id: selectedInvoice?.id,
+      returnItems,
+      print: shouldPrint
     });
-    
-    return Math.max(0, total); // التأكد من أن الإجمالي لا يكون سالباً
-  }, [selectedInvoice, returnItems]);
-
-  // استخدام useCallback لمنع إعادة إنشاء الدالة
-  const onConfirmReturn = useCallback(async (shouldPrint: boolean) => {
-    try {
-      console.log("بيانات الاسترجاع المُرسلة:", {
-        invoice_id: selectedInvoice?.id,
-        returnItems,
-        print: shouldPrint
-      });
-
-      // إعادة تعيين response السابقة
-      setReturnResponse(null);
-
-      // تنفيذ عملية الاسترجاع
-      await handleReturnItems();
-
-      // محاكاة response ناجحة (يجب استبدالها بالـ response الفعلية من API)
-      const mockResponse: ReturnResponse = {
-        success: true,
-        message: "تم استرجاع المنتجات بنجاح",
-        data: {
-          return_id: `RET-${Date.now()}`,
-          new_invoice_total: totalAfterReturn,
-          returned_items: Object.entries(returnItems)
-            .filter(([_, qty]) => qty > 0)
-            .map(([itemId, qty]) => {
-              const item = selectedInvoice?.items.find(i => i.id === itemId);
-              return {
-                item_id: itemId,
-                returned_quantity: qty,
-                refund_amount: qty * (item?.unit_price || 0)
-              };
-            })
-        }
-      };
-
-      setReturnResponse(mockResponse);
-
-      // إذا طلب المستخدم الطباعة وكانت العملية ناجحة
-      if (shouldPrint && selectedInvoice && mockResponse.success) {
-        setTimeout(() => {
-          generateInvoicePDF({
-            ...selectedInvoice,
-            hasReturns: Object.values(returnItems).some(qty => qty > 0),
-            total_amount: mockResponse.data?.new_invoice_total || totalAfterReturn
-          });
-        }, 500);
-      }
-
-    } catch (error) {
-      console.error("خطأ في عملية الاسترجاع:", error);
-      
-      const errorResponse: ReturnResponse = {
-        success: false,
-        message: "فشل في عملية الاسترجاع",
-        error: error instanceof Error ? error.message : "خطأ غير معروف"
-      };
-      
-      setReturnResponse(errorResponse);
+    handleReturnItems();
+    if (shouldPrint && selectedInvoice) {
+      setTimeout(() => {
+        generateInvoicePDF({
+          ...selectedInvoice,
+          hasReturns: Object.values(returnItems).some(qty => qty > 0),
+        });
+      }, 500);
     }
-  }, [selectedInvoice, returnItems, handleReturnItems, totalAfterReturn]);
+  };
 
-  const getPaymentMethodDetails = useCallback((method: string) => {
+  const getPaymentMethodDetails = (method: string) => {
     switch (method) {
       case "cash":
         return { text: "نقدي", color: "text-green-600" };
@@ -188,7 +114,7 @@ const ReturnDialog = ({
       default:
         return { text: method, color: "text-gray-600" };
     }
-  }, []);
+  };
 
   const generateInvoicePDF = async (invoiceData: any) => {
     try {
@@ -245,85 +171,79 @@ const ReturnDialog = ({
           <title>فاتورة ${safeData.invoice_number || "غير معروف"}</title>
           <meta charset="UTF-8">
           <script src="/libs/JsBarcode.all.min.js"></script>
-          <style>
-            * { 
-              font-family: 'Courier New', monospace; 
-              margin: 0; 
-              padding: 0; 
-              box-sizing: border-box;   
-            }
-            body { 
-              width: 80mm; 
-              margin: 0 auto; 
-              padding: 2mm; 
-              color: #000; 
-              font-size: 12px; 
-              line-height: 1.3; 
-              background: #fff;
-            }
+       <style>
+  * { 
+    font-family: 'Courier New', monospace; 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box;   
+  }
+  body { 
+    width: 80mm; 
+    margin: 0 auto; 
+    padding: 2mm; 
+    color: #000; 
+    font-size: 12px; 
+    line-height: 1.3; 
+    background: #fff;
+  }
 
-            .header { 
-              text-align: center; 
-              margin-bottom: 5px; 
-              padding-bottom: 5px; 
-              border-bottom: 1px dashed #000; 
-            }
-            .store-name { font-size: 16px; font-weight: bold; letter-spacing: 1px; }
-            .invoice-title { font-size: 14px; margin: 3px 0; }
-            .invoice-number { font-size: 13px; font-weight: bold; background: #f0f0f0; padding: 2px 5px; display: inline-block; border-radius: 3px; }
+  .header { 
+    text-align: center; 
+    margin-bottom: 5px; 
+    padding-bottom: 5px; 
+    border-bottom: 1px dashed #000; 
+  }
+  .store-name { font-size: 16px; font-weight: bold; letter-spacing: 1px; }
+  .invoice-title { font-size: 14px; margin: 3px 0; }
+  .invoice-number { font-size: 13px; font-weight: bold; background: #f0f0f0; padding: 2px 5px; display: inline-block; border-radius: 3px; }
 
-            .info { margin: 8px 0; }
-            .info-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; }
-            .info-label { font-weight: bold; min-width: 60px; }
+  .info { margin: 8px 0; }
+  .info-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; }
+  .info-label { font-weight: bold; min-width: 60px; }
 
-            table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 11px; }
-            th, td { padding: 4px 2px; text-align: right; border-bottom: 1px solid #ddd; }
-            th { font-weight: bold; border-bottom: 2px solid #000; }
-            .total-row { font-weight: bold; border-top: 2px solid #000; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 11px; }
+  th, td { padding: 4px 2px; text-align: right; border-bottom: 1px solid #ddd; }
+  th { font-weight: bold; border-bottom: 2px solid #000; }
+  .total-row { font-weight: bold; border-top: 2px solid #000; }
 
-            .status-badge { display: inline-block; padding: 2px 5px; border-radius: 3px; font-size: 10px; font-weight: bold; }
-            .paid { background: #e6f7e6; color: #0a5c0a; }
+  .status-badge { display: inline-block; padding: 2px 5px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+  .paid { background: #e6f7e6; color: #0a5c0a; }
 
-            .method-badge { display: inline-block; padding: 2px 5px; border-radius: 3px; background: #f0f0f0; font-size: 10px; }
+  .method-badge { display: inline-block; padding: 2px 5px; border-radius: 3px; background: #f0f0f0; font-size: 10px; }
 
-            .totals-box { border: 1px solid #000; padding: 8px; margin-top: 8px; font-size: 12px; }
-            .total-item { display: flex; justify-content: space-between; margin-bottom: 4px; }
-            .total-value { font-weight: bold; }
+  .totals-box { border: 1px solid #000; padding: 8px; margin-top: 8px; font-size: 12px; }
+  .total-item { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .total-value { font-weight: bold; }
 
-            .footer { margin-top: 10px; text-align: center; font-size: 10px; color: #666; border-top: 1px dashed #aaa; padding-top: 5px; }
+  .footer { margin-top: 10px; text-align: center; font-size: 10px; color: #666; border-top: 1px dashed #aaa; padding-top: 5px; }
 
-            .barcode-container { 
-              text-align: center; 
-              margin: 8px 0; 
-            }
-            .barcode-container img,
-            .barcode-container canvas {
-              max-width: 250px;
-              height: auto;
-            }
-            .barcode-label { font-size: 10px; margin-top: 2px; }
+  /* ✅ تصغير البركود */
+  .barcode-container { 
+    text-align: center; 
+    margin: 8px 0; 
+  }
+  .barcode-container img,
+  .barcode-container canvas {
+    max-width: 250px;  /* صغر الحجم */
+    height: auto;
+  }
+  .barcode-label { font-size: 10px; margin-top: 2px; }
 
-            .return-info {
-              background: #fff3cd;
-              border: 1px solid #ffeaa7;
-              border-radius: 4px;
-              padding: 5px;
-              margin: 5px 0;
-              font-size: 10px;
-            }
+  /* ✅ خلي الفاتورة في النص أثناء الطباعة */
+  @media print {
+    @page {
+      size: auto;  
+      margin: 0mm auto; /* يوسّط الفاتورة */
+    }
+    body { 
+      width: 80mm; 
+      margin: 0 auto; 
+      padding: 2mm; 
+    }
+  }
+</style>
 
-            @media print {
-              @page {
-                size: auto;  
-                margin: 0mm auto;
-              }
-              body { 
-                width: 80mm; 
-                margin: 0 auto; 
-                padding: 2mm; 
-              }
-            }
-          </style>
         </head>
         <body>
           <div class="header">
@@ -331,12 +251,6 @@ const ReturnDialog = ({
             <div class="invoice-title">فاتورة مبيعات ${safeData.hasReturns ? '(بعد الاسترجاع)' : ''}</div>
           </div>
         
-          ${safeData.hasReturns ? `
-            <div class="return-info">
-              <strong>ملاحظة:</strong> هذه الفاتورة تحتوي على مرتجعات
-            </div>
-          ` : ''}
-
           <div class="info">
             <div class="info-row"><span class="info-label">التاريخ:</span><span>${formattedDate} ${formattedTime}</span></div>
             <div class="info-row"><span class="info-label">البائع:</span><span>${safeData.cashier?.name || currentUser?.name || "غير معروف"}</span></div>
@@ -372,12 +286,18 @@ const ReturnDialog = ({
                   }
                 )
                 .join("")}
-              <tr class="total-row"><td colspan="2">المجموع</td><td colspan="3" style="text-align: left;">${itemsTotal.toFixed(2)} ج.م</td></tr>
+              <tr class="total-row"><td colspan="2">المجموع</td><td colspan="3" style="text-align: left;">${itemsTotal.toFixed(
+                2
+              )} ج.م</td></tr>
             </tbody>
           </table>
           <div class="totals-box">
-            <div class="total-item"><span>المجموع:</span><span class="total-value">${itemsTotal.toFixed(2)} ج.م</span></div>
-            <div class="total-item"><span>المدفوع:</span><span class="total-value">${Number(paidAmount).toFixed(2)} ج.م</span></div>
+            <div class="total-item"><span>المجموع:</span><span class="total-value">${itemsTotal.toFixed(
+              2
+            )} ج.م</span></div>
+            <div class="total-item"><span>المدفوع:</span><span class="total-value">${Number(paidAmount).toFixed(
+              2
+            )} ج.م</span></div>
           </div>
           
           <div class="barcode-container">
@@ -390,6 +310,7 @@ const ReturnDialog = ({
           </div>
           <script>
             try {
+              // إنشاء باركود لرقم الفاتورة
               JsBarcode("#barcode", "${safeData.invoice_number || 'غير معروف'}", {
                 format: "CODE128",
                 width: 2,
@@ -397,6 +318,7 @@ const ReturnDialog = ({
                 displayValue: false,
                 margin: 5
               });
+              // تشغيل الطباعة بعد تأخير قصير
               setTimeout(function() {
                 window.print();
                 setTimeout(function() {
@@ -405,6 +327,7 @@ const ReturnDialog = ({
               }, 500);
             } catch (e) {
               console.error("خطأ أثناء إنشاء الباركود أو الطباعة:", e);
+              alert("حدث خطأ أثناء إنشاء الباركود أو الطباعة. يرجى المحاولة مرة أخرى.");
               window.close();
             }
           </script>
@@ -415,300 +338,153 @@ const ReturnDialog = ({
       printWindow.document.write(printContent);
       printWindow.document.close();
 
+      // احتياطي: التأكد من إغلاق النافذة إذا فشل البرنامج النصي
       setTimeout(() => {
         if (!printWindow.closed) {
+          console.warn("نافذة الطباعة لم تغلق تلقائيًا، يتم إغلاقها الآن");
           printWindow.close();
         }
       }, 1000);
     } catch (error) {
       console.error("خطأ في إنشاء نافذة الطباعة:", error);
-      alert("حدث خطأ أثناء محاولة الطباعة: " + (error instanceof Error ? error.message : "خطأ غير معروف"));
+      alert("حدث خطأ أثناء محاولة الطباعة: " + (error instanceof Error ? error.message : "خطأ غير معروف") + ". يرجى التأكد من إعدادات الطباعة أو السماح بالنوافذ المنبثقة والمحاولة مرة أخرى.");
     }
   };
 
-  // إعادة تعيين الحالة عند إغلاق الدايالوج
-  const handleDialogClose = (isOpen: boolean) => {
-    if (!isOpen) {
-      setShowPrintOption(false);
-      setReturnResponse(null);
-    }
-    onOpenChange(isOpen);
-  };
-
-  // حساب إجمالي الكمية المسترجعة
-  const totalReturnedQuantity = useMemo(() => {
-    return Object.values(returnItems).reduce((sum, qty) => sum + qty, 0);
-  }, [returnItems]);
-
-  // حساب إجمالي المبلغ المسترجع
-  const totalRefundAmount = useMemo(() => {
+  // حساب الإجمالي بعد الاسترجاع
+  const calculateTotalAfterReturn = () => {
     if (!selectedInvoice) return 0;
     
-    return selectedInvoice.items.reduce((sum, item) => {
+    let total = selectedInvoice.total_amount;
+    
+    selectedInvoice.items.forEach(item => {
       const returnQty = returnItems[item.id] || 0;
-      return sum + (returnQty * item.unit_price);
-    }, 0);
-  }, [selectedInvoice, returnItems]);
-
-  // دالة لعرض بطاقة المنتج (للشاشات الصغيرة)
-  const renderItemCard = (item: SaleItem) => {
-    const maxReturnable = item.quantity - (item.returned_quantity || 0);
-    const totalPrice = item.quantity * item.unit_price;
-    const returnValue = returnItems[item.id] || 0;
-
-    if (maxReturnable <= 0) return null;
-
-    return (
-      <div
-        key={item.id}
-        className="
-          rounded-lg 
-          border 
-          bg-card 
-          p-3 sm:p-4
-          shadow-sm 
-          transition-all 
-          hover:shadow-md
-          dark:bg-gray-800
-          dark:border-gray-700
-        "
-      >
-        <div className="space-y-2">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-            <div>
-              <h4 className="font-medium text-sm sm:text-base dark:text-gray-200">
-                {item.product?.name || item.product_name || 'منتج غير معروف'}
-              </h4>
-              {item.product?.barcode && (
-                <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
-                  باركود: {item.product.barcode}
-                </span>
-              )}
-            </div>
-            {item.product?.category && (
-              <Badge
-                className="text-[10px] sm:text-xs text-white w-fit"
-                style={{ backgroundColor: item.product.category.color }}
-              >
-                {item.product.category.name}
-              </Badge>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">سعر الوحدة:</span>
-              <span className="dark:text-gray-300">{Number(item.unit_price).toFixed(2)} ج.م</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">الكمية المباعة:</span>
-              <span className="dark:text-gray-300">{item.quantity}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">السعر الإجمالي:</span>
-              <span className="dark:text-gray-300">{Number(totalPrice).toFixed(2)} ج.م</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">المسترجعة سابقاً:</span>
-              <span className="dark:text-gray-300">{item.returned_quantity || 0}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">المتبقي للاسترجاع:</span>
-              <span className="dark:text-gray-300">{maxReturnable}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">الكمية للاسترجاع:</span>
-              <Input
-                type="number"
-                min={0}
-                max={maxReturnable}
-                value={returnValue}
-                onChange={(e) => {
-                  const value = Math.min(
-                    Math.max(0, parseInt(e.target.value) || 0),
-                    maxReturnable
-                  );
-                  setReturnItems({ ...returnItems, [item.id]: value });
-                  setShowPrintOption(Object.values({ ...returnItems, [item.id]: value }).some(q => q > 0));
-                }}
-                className="w-14 sm:w-16 text-center text-xs sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white h-8 sm:h-9"
-                dir="rtl"
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // دالة لعرض الجدول (للشاشات الكبيرة)
-  const renderItemTable = () => {
-    return (
-      <div className="overflow-x-auto">
-        <Table dir="rtl" className="min-w-[600px] text-xs sm:text-sm">
-          <TableHeader>
-            <TableRow className="dark:border-gray-700">
-              <TableHead className="text-right text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">المنتج</TableHead>
-              <TableHead className="text-right text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">الفئة</TableHead>
-              <TableHead className="text-right text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">سعر الوحدة</TableHead>
-              <TableHead className="text-right text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">الكمية المباعة</TableHead>
-              <TableHead className="text-right text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">السعر الإجمالي</TableHead>
-              <TableHead className="text-right text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">المسترجعة سابقاً</TableHead>
-              <TableHead className="text-right text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">المتبقي للاسترجاع</TableHead>
-              <TableHead className="text-right text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">الكمية للاسترجاع</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {selectedInvoice?.items.map((item) => {
-              const maxReturnable = item.quantity - (item.returned_quantity || 0);
-              const totalPrice = item.quantity * item.unit_price;
-              const returnValue = returnItems[item.id] || 0;
-              
-              return maxReturnable > 0 ? (
-                <TableRow key={item.id} className="dark:border-gray-700 hover:dark:bg-gray-800">
-                  <TableCell className="font-medium text-xs sm:text-sm dark:text-gray-200 px-1 sm:px-2">
-                    {item.product?.name || item.product_name || 'منتج غير معروف'}
-                    {item.product?.barcode && (
-                      <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">باركود: {item.product.barcode}</div>
-                    )}
-                  </TableCell>
-                  <TableCell className="px-1 sm:px-2">
-                    {item.product?.category ? (
-                      <Badge
-                        className="text-[10px] sm:text-xs text-white"
-                        style={{ backgroundColor: item.product.category.color }}
-                      >
-                        {item.product.category.name}
-                      </Badge>
-                    ) : '-'}
-                  </TableCell>
-                  <TableCell className="text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">{Number(item.unit_price).toFixed(2)} ج.م</TableCell>
-                  <TableCell className="text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">{item.quantity}</TableCell>
-                  <TableCell className="text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">{Number(totalPrice).toFixed(2)} ج.م</TableCell>
-                  <TableCell className="text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">{item.returned_quantity || 0}</TableCell>
-                  <TableCell className="text-xs sm:text-sm dark:text-gray-300 px-1 sm:px-2">{maxReturnable}</TableCell>
-                  <TableCell className="px-1 sm:px-2">
-                    <Input
-                      type="number"
-                      min={0}
-                      max={maxReturnable}
-                      value={returnValue}
-                      onChange={(e) => {
-                        const value = Math.min(
-                          Math.max(0, parseInt(e.target.value) || 0),
-                          maxReturnable
-                        );
-                        setReturnItems({ ...returnItems, [item.id]: value });
-                        setShowPrintOption(Object.values({ ...returnItems, [item.id]: value }).some(q => q > 0));
-                      }}
-                      className="w-14 sm:w-16 text-center text-xs sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white h-8 sm:h-9"
-                      dir="rtl"
-                      disabled={isLoading}
-                    />
-                  </TableCell>
-                </TableRow>
-              ) : null;
-            })}
-          </TableBody>
-        </Table>
-      </div>
-    );
+      total -= returnQty * item.unit_price;
+    });
+    
+    return total;
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="w-[95vw] sm:w-[90vw] md:max-w-4xl lg:max-w-6xl max-h-[85vh] overflow-y-auto dark:bg-gray-900 dark:text-gray-100 p-3 sm:p-4 md:p-6" dir="rtl">
-        <DialogHeader>
-          <DialogTitle className="text-left text-base sm:text-lg md:text-xl dark:text-gray-200">استرجاع منتجات</DialogTitle>
-          <DialogDescription className="text-right text-xs sm:text-sm md:text-base dark:text-gray-300 space-y-1 sm:space-y-2">
-            {selectedInvoice && (
-              <div>
-                <p>فاتورة رقم: {selectedInvoice.invoice_number}</p>
-                <p>التاريخ والوقت: {format(new Date(selectedInvoice.created_at), 'yyyy/MM/dd HH:mm', { locale: ar })}</p>
-                <p>طريقة الدفع: {getPaymentMethodName(selectedInvoice.payment_method)}</p>
-                <p>المبلغ الإجمالي: {Number(selectedInvoice.total_amount).toFixed(2)} ج.م</p>
-                {totalReturnedQuantity > 0 && (
-                  <>
-                    <p className="font-bold text-red-600">
-                      الكمية المسترجعة: {totalReturnedQuantity} عنصر
-                    </p>
-                    <p className="font-bold text-red-600">
-                      المبلغ المسترجع: {totalRefundAmount.toFixed(2)} ج.م
-                    </p>
-                    <p className="font-bold text-green-600">
-                      الإجمالي بعد الاسترجاع: {totalAfterReturn.toFixed(2)} ج.م
-                    </p>
-                  </>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (!isOpen) {
+        setShowPrintOption(false);
+      }
+      onOpenChange(isOpen);
+    }}>
+        <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-y-auto dark:bg-gray-900 dark:text-gray-100" dir="rtl">
+            <DialogHeader>
+                <DialogTitle className="text-left dark:text-gray-200">استرجاع منتجات</DialogTitle>
+                <DialogDescription className="text-right dark:text-gray-300">
+                    {selectedInvoice && (
+                        <div className="space-y-2">
+                            <p>فاتورة رقم: {selectedInvoice.invoice_number}</p>
+                            <p>التاريخ والوقت: {format(new Date(selectedInvoice.created_at), 'yyyy/MM/dd HH:mm', { locale: ar })}</p>
+                            <p>طريقة الدفع: {getPaymentMethodName(selectedInvoice.payment_method)}</p>
+                            <p>المبلغ الإجمالي: {Number(selectedInvoice.total_amount).toFixed(2)} ج.م</p>
+                            {Object.values(returnItems).some(qty => qty > 0) && (
+                              <p className="font-bold text-green-600">
+                                الإجمالي بعد الاسترجاع: {calculateTotalAfterReturn().toFixed(2)} ج.م
+                              </p>
+                            )}
+                        </div>
+                    )}
+                </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+                {selectedInvoice && (
+                    <Table dir="rtl">
+                        <TableHeader>
+                            <TableRow className="dark:border-gray-700">
+                                <TableHead className="text-right dark:text-gray-300">المنتج</TableHead>
+                                <TableHead className="text-right dark:text-gray-300">الفئة</TableHead>
+                                <TableHead className="text-right dark:text-gray-300">سعر الوحدة</TableHead>
+                                <TableHead className="text-right dark:text-gray-300">الكمية المباعة</TableHead>
+                                <TableHead className="text-right dark:text-gray-300">السعر الإجمالي</TableHead>
+                                <TableHead className="text-right dark:text-gray-300">المسترجعة سابقاً</TableHead>
+                                <TableHead className="text-right dark:text-gray-300">المتبقي للاسترجاع</TableHead>
+                                <TableHead className="text-right dark:text-gray-300">الكمية للاسترجاع</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {selectedInvoice.items.map((item) => {
+                                const maxReturnable = item.quantity - (item.returned_quantity || 0);
+                                const totalPrice = item.quantity * item.unit_price;
+                                const returnValue = returnItems[item.id] || 0;
+                                
+                                return maxReturnable > 0 ? (
+                                    <TableRow key={item.id} className="dark:border-gray-700 hover:dark:bg-gray-800">
+                                        <TableCell className="font-medium dark:text-gray-200">
+                                            {item.product?.name || item.product_name || 'منتج غير معروف'}
+                                            {item.product?.barcode && (
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">باركود: {item.product.barcode}</div>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            {item.product?.category ? (
+                                                <Badge
+                                                    className="text-xs text-white"
+                                                    style={{ backgroundColor: item.product.category.color }}
+                                                >
+                                                    {item.product.category.name}
+                                                </Badge>
+                                            ) : '-'}
+                                        </TableCell>
+                                        <TableCell className="dark:text-gray-300">{Number(item.unit_price).toFixed(2)} ج.م</TableCell>
+                                        <TableCell className="dark:text-gray-300">{item.quantity}</TableCell>
+                                        <TableCell className="dark:text-gray-300">{Number(totalPrice).toFixed(2)} ج.م</TableCell>
+                                        <TableCell className="dark:text-gray-300">{item.returned_quantity || 0}</TableCell>
+                                        <TableCell className="dark:text-gray-300">{maxReturnable}</TableCell>
+                                        <TableCell>
+                                            <Input
+                                                type="number"
+                                                min={0}
+                                                max={maxReturnable}
+                                                value={returnValue}
+                                                onChange={(e) => {
+                                                    const value = Math.min(
+                                                        Math.max(0, parseInt(e.target.value) || 0),
+                                                        maxReturnable
+                                                    );
+                                                    console.log(`تحديث كمية الاسترجاع للعنصر ${item.id}:`, value);
+                                                    setReturnItems({ ...returnItems, [item.id]: value });
+                                                    setShowPrintOption(Object.values({ ...returnItems, [item.id]: value }).some(q => q > 0));
+                                                }}
+                                                className="w-20 text-center dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                                                dir="rtl"
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : null;
+                            })}
+                        </TableBody>
+                    </Table>
                 )}
-              </div>
-            )}
-          </DialogDescription>
-        </DialogHeader>
-
-        {/* عرض رسالة الاستجابة */}
-        {returnResponse && (
-          <div className={`p-2 sm:p-3 md:p-4 rounded-md ${
-            returnResponse.success 
-              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
-              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-          }`}>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-              <span className="font-semibold text-xs sm:text-sm md:text-base">{returnResponse.message}</span>
-              {returnResponse.success && returnResponse.data && (
-                <Badge variant="secondary" className="text-xs">
-                  رقم الاسترجاع: {returnResponse.data.return_id}
-                </Badge>
-              )}
             </div>
-            {returnResponse.error && (
-              <p className="text-xs sm:text-sm mt-1 sm:mt-2">الخطأ: {returnResponse.error}</p>
-            )}
-          </div>
-        )}
-
-        <div className="space-y-3 sm:space-y-4">
-          {selectedInvoice && (
-            <>
-              {/* Card layout for small screens */}
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:hidden">
-                {selectedInvoice.items.map(renderItemCard)}
-              </div>
-              {/* Table layout for medium and larger screens */}
-              <div className="hidden md:block">
-                {renderItemTable()}
-              </div>
-            </>
-          )}
-        </div>
-        <DialogFooter className="flex flex-col sm:flex-row sm:justify-start gap-2 mt-3 sm:mt-4">
-          <Button
-            type="button"
-            onClick={() => onConfirmReturn(true)}
-            className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white text-xs sm:text-sm py-2 px-3 sm:py-2.5 sm:px-4 w-full sm:w-auto"
-            disabled={isLoading || Object.values(returnItems).every((q) => q === 0)}
-          >
-            {isLoading ? "جاري المعالجة..." : "تأكيد وطباعة"}
-          </Button>
-          <Button
-            type="button"
-            onClick={() => onConfirmReturn(false)}
-            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-xs sm:text-sm py-2 px-3 sm:py-2.5 sm:px-4 w-full sm:w-auto"
-            disabled={isLoading || Object.values(returnItems).every((q) => q === 0)}
-          >
-            {isLoading ? "جاري المعالجة..." : "تأكيد بدون طباعة"}
-          </Button>
-          <DialogClose asChild>
-            <Button 
-              type="button" 
-              variant="secondary" 
-              className="dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 text-xs sm:text-sm py-2 px-3 sm:py-2.5 sm:px-4 w-full sm:w-auto"
-              disabled={isLoading}
-            >
-              إغلاق
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
+            <DialogFooter className="sm:justify-start gap-2">
+                <Button
+                    type="button"
+                    onClick={() => onConfirmReturn(true)}
+                    className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white"
+                    disabled={isLoading || Object.values(returnItems).every((q) => q === 0)}
+                >
+                    {isLoading ? "جاري المعالجة..." : "تأكيد وطباعة"}
+                </Button>
+                <Button
+                    type="button"
+                    onClick={() => onConfirmReturn(false)}
+                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
+                    disabled={isLoading || Object.values(returnItems).every((q) => q === 0)}
+                >
+                    {isLoading ? "جاري المعالجة..." : "تأكيد بدون طباعة"}
+                </Button>
+                <DialogClose asChild>
+                    <Button type="button" variant="secondary" className="dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200">
+                        إلغاء
+                    </Button>
+                </DialogClose>
+            </DialogFooter>
+        </DialogContent>
     </Dialog>
   );
 };
