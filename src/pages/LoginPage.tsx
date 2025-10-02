@@ -23,9 +23,9 @@ const Login = ({ setAbility }: LoginProps) => {
   const { setCurrentUser } = useUser();
 
   // ✅ تنظيف البيانات عند تحميل المكون
-  // useEffect(() => {
-  //   authService.clearAuthData();
-  // }, []);
+  useEffect(() => {
+    authService.clearAuthData();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
