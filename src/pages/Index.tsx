@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { Tabs } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import axios from "axios";
+import api from "@/lib/axios"; // الـ axios instance اللي مجهزناه
 import { AbilityContext, createAppAbility } from "@/config/ability";
 import { Loader2 } from "lucide-react";
 import Header from "@/components/dashboard/Header";
@@ -16,7 +16,6 @@ const Index = () => {
   const navigate = useNavigate();
   const ability = useContext(AbilityContext);
 
-  // Fetch current user and update Ability
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
@@ -25,24 +24,32 @@ const Index = () => {
           navigate("/login", { replace: true });
           return;
         }
-        const response = await axios.get("/api/get-user", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
 
-          const permissions = response.data.permissions || [];
-          console.log("User permissions:", permissions);
-                
-          // لو المستخدم عنده manage-all → يبقى Admin
-          if (permissions.includes("manage-all")) {
-            ability.update(createAppAbility([{ action: "manage", subject: "All" }]).rules);
-          } else {
-            const rules = permissions.map((permission: string) => {
-              const [action, subject] = permission.split("-");
-              return { action, subject };
-            });
-            ability.update(createAppAbility(rules).rules);
+        const response = await api.get("/api/get-user"); // استخدمنا الـ api instance
+
+        // حماية من response غير صالح
+        let permissions: string[] = [];
+        if (response && response.data) {
+          try {
+            permissions = response.data.permissions || [];
+          } catch (err) {
+            console.error("Invalid JSON response:", response.data);
+            permissions = [];
           }
-          
+        }
+
+        console.log("User permissions:", permissions);
+
+        // لو المستخدم عنده manage-all → يبقى Admin
+        if (permissions.includes("manage-all")) {
+          ability.update(createAppAbility([{ action: "manage", subject: "All" }]).rules);
+        } else {
+          const rules = permissions.map((permission: string) => {
+            const [action, subject] = permission.split("-");
+            return {  action: action as any, subject: subject as any  };
+          });
+          ability.update(createAppAbility(rules).rules);
+        }
 
         // إذا لم يكن للمستخدم صلاحية الوصول إلى تبويب "sales"، قم بتغيير التبويب الافتراضي
         if (!ability.can("read", "Dashboard")) {
@@ -52,6 +59,7 @@ const Index = () => {
             navigate("/unauthorized");
           }
         }
+
       } catch (error: any) {
         console.error("Failed to fetch user permissions:", error.response?.data);
         if (error.response?.status === 401) {
@@ -68,6 +76,7 @@ const Index = () => {
         setIsLoadingPermissions(false);
       }
     };
+
     fetchCurrentUser();
   }, [navigate, ability, toast]);
 
@@ -89,15 +98,15 @@ const Index = () => {
       className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-all duration-300"
       dir="rtl"
     >
-     <Header
-      onLogout={handleLogout}
-      activeTab="sales"
-      setActiveTab={setActiveTab}
-    />
+      <Header
+        onLogout={handleLogout}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} ability={ability} />
-          <ContentTabs activeTab={activeTab}  />
+          <ContentTabs activeTab={activeTab} />
         </Tabs>
       </div>
     </div>
