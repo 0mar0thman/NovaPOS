@@ -1,7 +1,6 @@
-// pages/Login.tsx - الإصلاح الكامل
-import { useState } from "react";
+// pages/Login.tsx - الإصدار المعدل
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createAppAbility, AppAbility } from "@/config/ability";
 import { mapBackendPermissions } from "@/config/abilityMapper";
 import { useUser } from "@/components/dashboard/UserContext";
+import { authService } from "@/services/authService"; // ✅ استيراد الخدمة
 
 interface LoginProps {
   setAbility: React.Dispatch<React.SetStateAction<AppAbility>>;
@@ -22,118 +22,59 @@ const Login = ({ setAbility }: LoginProps) => {
   const navigate = useNavigate();
   const { setCurrentUser } = useUser();
 
-  // ✅ دالة تنظيف محسنة
-  const clearAuthData = () => {
-    const keys = ["auth_token", "permissions", "user_data"];
-    keys.forEach(key => {
-      localStorage.removeItem(key);
-      // ✅ تأكد من إزالة أي قيم "undefined" نصية
-      if (localStorage.getItem(key) === "undefined") {
-        localStorage.removeItem(key);
-      }
-    });
-  };
+  // ✅ تنظيف البيانات عند تحميل المكون
+  useEffect(() => {
+    authService.clearAuthData();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // ✅ تنظيف أي بيانات قديمة قبل البدء
-    clearAuthData();
 
     try {
-      console.log("جاري الحصول على CSRF token...");
-      
-      // ✅ الحصول على CSRF token مع معالجة الأخطاء
-      const csrfResponse = await api.get("sanctum/csrf-cookie", { 
-        withCredentials: true,
-        timeout: 10000
-      });
-      console.log("CSRF token تم الحصول عليه:", csrfResponse.status);
+      // ✅ استخدام خدمة المصادقة
+      const result = await authService.loginUser(email, password);
 
-      console.log("جاري تسجيل الدخول...");
-      const loginResponse = await api.post(
-        "/api/login",
-        { email, password },
-        { 
-          withCredentials: true,
-          timeout: 15000
-        }
-      );
+      if (result.success && result.data) {
+        const { user, permissions, token } = result.data;
 
-      console.log("استجابة الخادم:", loginResponse.data);
+        // ✅ حفظ بيانات المستخدم في context
+        setCurrentUser({
+          id: user.id,
+          name: user.name || "مستخدم",
+          email: user.email,
+          roles: user.role || "user",
+        });
 
-      // ✅ تحقق قوي من صحة الاستجابة
-      if (!loginResponse.data) {
-        throw new Error("لا توجد بيانات في استجابة الخادم");
+        // ✅ تحويل الصلاحيات وتحديث ability
+        const rules = mapBackendPermissions(permissions || []);
+        setAbility(createAppAbility(rules));
+
+        toast({
+          title: "تم تسجيل الدخول بنجاح ✅",
+          description: `مرحباً ${user.name || user.email}`,
+          className: "transition-all duration-300",
+        });
+        
+        // ✅ الانتقال للصفحة الرئيسية
+        navigate("/", { replace: true });
+        
+      } else {
+        // ✅ فشل تسجيل الدخول
+        toast({
+          title: "فشل تسجيل الدخول",
+          description: result.error || "حدث خطأ غير متوقع",
+          variant: "destructive",
+          className: "transition-all duration-300",
+        });
       }
-
-      const { token, permissions, user } = loginResponse.data;
-
-      // ✅ تحقق من وجود التوكن والمستخدم
-      if (!token || token === "undefined" || token === "null") {
-        throw new Error("توكن المصادقة غير صالح");
-      }
-
-      if (!user) {
-        throw new Error("بيانات المستخدم غير متوفرة");
-      }
-
-      // ✅ حفظ البيانات مع التحقق
-      if (token && token !== "undefined") {
-        localStorage.setItem("auth_token", token);
-        console.log("تم حفظ التوكن:", token.substring(0, 20) + "...");
-      }
-
-      if (permissions && Array.isArray(permissions)) {
-        localStorage.setItem("permissions", JSON.stringify(permissions));
-        console.log("تم حفظ الصلاحيات:", permissions);
-      }
-
-      // ✅ حفظ بيانات المستخدم في context
-      setCurrentUser({
-        id: user.id,
-        name: user.name || "مستخدم",
-        email: user.email,
-        roles: user.role || "user",
-      });
-
-      // ✅ تحويل الصلاحيات وتحديث ability
-      const rules = mapBackendPermissions(permissions || []);
-      setAbility(createAppAbility(rules));
-
-      toast({
-        title: "تم تسجيل الدخول بنجاح ✅",
-        description: `مرحباً ${user.name || user.email}`,
-        className: "transition-all duration-300",
-      });
-      
-      // ✅ الانتقال للصفحة الرئيسية
-      navigate("/", { replace: true });
       
     } catch (error: any) {
-      console.error("خطأ تسجيل الدخول:", error);
-      
-      // ✅ تنظيف البيانات في حالة الخطأ
-      clearAuthData();
-      
-      let errorMessage = "حدث خطأ غير متوقع";
-      
-      if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network')) {
-        errorMessage = "مشكلة في الاتصال بالخادم. تحقق من اتصال الإنترنت.";
-      } else if (error.response?.status === 401) {
-        errorMessage = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
-      } else if (error.response?.status === 422) {
-        errorMessage = "بيانات الدخول غير صالحة";
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
+      console.error("❌ خطأ غير متوقع:", error);
       
       toast({
         title: "فشل تسجيل الدخول",
-        description: errorMessage,
+        description: "حدث خطأ غير متوقع أثناء تسجيل الدخول",
         variant: "destructive",
         className: "transition-all duration-300",
       });
@@ -141,11 +82,6 @@ const Login = ({ setAbility }: LoginProps) => {
       setIsLoading(false);
     }
   };
-
-  // ✅ تنظيف البيانات عند تحميل المكون
-  useState(() => {
-    clearAuthData();
-  });
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-100 to-blue-200 dark:from-slate-900 dark:to-slate-800 transition-all duration-300" dir="rtl">
